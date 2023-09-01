@@ -3,7 +3,34 @@ var procesos = urlParams.get('procesos');
 var lotes = [];
 var no_lote = 0;
 
+/*---------------------------------------------------------------------------------------------- */
 
+
+class Process {
+    constructor(id, programador, operacion, tme) {
+        this.id = id;
+        this.programador = programador;
+        this.operacion = operacion;
+        this.tme = tme;
+    }
+}
+
+let view = false;
+
+let proces = [];
+let batch = [];
+let endedProcesses = [];
+
+let totalBatch = 0;
+let currentBatch = 0;
+let remainingBatch = totalBatch - currentBatch;
+
+let c = 0;
+let b = 0;
+
+
+
+/*---------------------------------------------------------------------------------------------- */
 
 var no_proceso = 1;
 var h3 = document.getElementById('h3').textContent = "Datos del proceso " + no_proceso + ".";
@@ -47,7 +74,8 @@ function cargarProceso() {
         return;
     }
 
-    let lote = [id, nombre, operacion, tiempo];
+    //let lote = [id, nombre, operacion, tiempo];
+    const lote = new Process(id,nombre,operacion,tiempo);
     lotes[no_lote] = [];
     lotes[no_lote] = lote;
     no_lote++;
@@ -76,7 +104,10 @@ function soloNumeros(input) {
 
 function clear() {
     if(no_proceso > procesos){
-        window.location.href = "../otra/index.html";
+        //window.location.href = "../otra/index.html";
+        for(let i=0; i<lotes.length; i++){
+            console.log(lotes[i]);
+        }
     }
     document.getElementById('id').value = '';
     document.getElementById('nombre').value = '';
