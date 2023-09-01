@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora</title>
+    <link rel="stylesheet" type="text/css" href="style_procesos.css">
+</head>
+<body>
+    <div class="calculator">
+        <h3 id="h3">Datos del proceso.</h3>
+        <input type="text" id="id" class="display" placeholder="ID del proceso." oninput="soloNumeros(this)">
+        <input type="text" id="nombre" class="display" placeholder="Nombre de programador.">
+        <input type="text" id="operacion" class="display" placeholder="Operacion a realizar." oninput="validarInput(this)">
+        <input type="number" id="tiempo" class="display" placeholder="Tiempo maximo estimado (seg).">
+        <button class="btn" onclick="cargarProceso()">Listo</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
