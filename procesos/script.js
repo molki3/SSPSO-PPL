@@ -11,6 +11,13 @@ let segundosTranscurridos = 0;
 const timerElement = document.getElementById('timer');
 var intervalID;
 
+//TR y TT
+let tiempo_transcurrido = 0;
+let tiempo_restante;
+const tiempoTranscurrido = document.getElementById('tiempot');
+const tiempoRestante = document.getElementById('tiempor');
+var intervalT;
+
 class Process {
     constructor(id, programador, operacion, tme) {
         this.id = id;
@@ -144,6 +151,13 @@ function actualizarContador() {
     timerElement.textContent = `Tiempo transcurrido: ${segundosTranscurridos} segundos`;
 }
 
+function Tiempos() {
+    tiempo_transcurrido++;
+    tiempo_restante--;
+    document.getElementById('tiempot').textContent = `${tiempo_transcurrido}`;
+    document.getElementById('tiempor').textContent = `${tiempo_restante}`;
+}
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -197,16 +211,20 @@ async function batchProcessing(lotes){
         
         for (let i = 0; i < 5; i++) {
 
-            //termina si no hay procesos
-            if(currentProcess==procesos) break; 
+            //termina contador local
+            clearInterval(intervalT);
+            tiempo_transcurrido = 0;
 
-            document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr>";
+            //termina si no hay procesos
+            if(currentProcess==procesos) break;
+
+            document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr><td></td><td></td><td></td><td></td><td id='tiempot'></td><td id='tiempor'></td>";
 
             //saca primer proceso del lote
             batchCopy.shift();
 
             //actualiza proceso actual
-            document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr><tr> <td> " + batch[currentBatch][i].programador + " </td> <td> " + batch[currentBatch][i].id + " </td> <td> " + batch[currentBatch][i].operacion + " </td> <td> " + batch[currentBatch][i].tme + " </td> </tr>";
+            document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr><tr> <td> " + batch[currentBatch][i].programador + " </td> <td> " + batch[currentBatch][i].id + " </td> <td> " + batch[currentBatch][i].operacion + " </td> <td> " + batch[currentBatch][i].tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> </tr>";
 
             //actualiza lote actual
             document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th></tr>";
@@ -214,12 +232,13 @@ async function batchProcessing(lotes){
                 document.getElementById('current-batch').innerHTML += "<tr> <td> " + batchCopy[j].id + " </td> <td> " + batchCopy[j].tme + " </td> </tr>";
             }
 
-            //OPERAR PROCESO ACTUAL
+            tiempo_restante = batch[currentBatch][i].tme;
+            intervalT = setInterval(Tiempos, 1000);
 
             await delay(batch[currentBatch][i].tme * 1000); //detiene por TME
 
             //imprime procesos terminados
-            document.getElementById('ended-process').innerHTML += "<tr> <td> " + batch[currentBatch][i].id + " </td> <td> " + batch[currentBatch][i].operacion + " </td> <td> " + eval(batch[currentBatch][i].operacion) + " </td> <td> " + (parseInt(currentBatch) + 1) + " </td> </tr>"
+            document.getElementById('ended-process').innerHTML += "<tr> <td> " + batch[currentBatch][i].id + " </td> <td> " + batch[currentBatch][i].operacion + " </td> <td> " + Number(eval(batch[currentBatch][i].operacion).toFixed(4)) + " </td> <td> " + (parseInt(currentBatch) + 1) + " </td> </tr>"
 
             endedProcesses.push(batch[currentBatch][i]);    //agrega proceso a terminados
 
