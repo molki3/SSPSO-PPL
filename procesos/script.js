@@ -76,9 +76,6 @@ function cargarProceso() {
         return;
     }
 
-
-    //let lote = [id, nombre, operacion, tiempo];
-    
     let lote = new Process(id,nombre,operacion,tiempo);
 
     lotes[no_lote] = [];
@@ -111,7 +108,6 @@ async function clear() {
     if(no_proceso > procesos){
         //window.location.href = "../otra/index.html";
 
-        //document.head.appendChild(scriptElement);
         document.getElementById('main').style = "display: inline-block;";
         document.getElementById('calculator').style = "display: none;";
 
@@ -204,13 +200,13 @@ async function batchProcessing(lotes){
             //termina si no hay procesos
             if(currentProcess==procesos) break; 
 
-            document.getElementById('current-process').innerHTML = "<tr><th>Nombre</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr>";
+            document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr>";
 
             //saca primer proceso del lote
             batchCopy.shift();
 
             //actualiza proceso actual
-            document.getElementById('current-process').innerHTML = "<tr><th>Nombre</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr><tr> <td> " + batch[currentBatch][i].id + " </td> <td> " + batch[currentBatch][i].tme + " </td> </tr>";
+            document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr><tr> <td> " + batch[currentBatch][i].programador + " </td> <td> " + batch[currentBatch][i].id + " </td> <td> " + batch[currentBatch][i].operacion + " </td> <td> " + batch[currentBatch][i].tme + " </td> </tr>";
 
             //actualiza lote actual
             document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th></tr>";
@@ -246,5 +242,5 @@ async function batchProcessing(lotes){
     clearInterval(intervalID);
 
     //limpia proceso actual
-    document.getElementById('current-process').innerHTML = "<tr><th>Nombre</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr>";
+    document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr>";
 }

@@ -16,20 +16,20 @@
         <button class="btn" onclick="cargarProceso()">Listo</button>
     </div>
 
-    <main id="main" class="m-10 rounded-xl bg-gray-200 p-10 hidden" style="display: none;">
+    <main id="main">
 
         <div class="my-5">
-            <h1 class="text-5xl font-extrabold">Batch Programming</h1>
+            <h1>Batch Programming</h1>
         </div>
 
-        <div class="remaing-batch">
-            <h2 class="text-3xl font-semibold" id="remaining-batch">  </h2>
+        <div>
+            <h2 id="remaining-batch">Lote(s) restante(s)</h2>
         </div>
 
         <div class="batch-content">
 
             <div>
-                <h2 class="text-2xl font-semibold">Lote Actual</h2>
+                <h3 class="text-2xl font-semibold">Lote Actual</h3>
                 <table id="current-batch">
                     <tr>
                         <th>ID</th>
@@ -39,13 +39,13 @@
             </div>
 
             <div>
-                <h2 class="text-2xl font-semibold">Proceso en Ejecucion</h2>
+                <h3 class="text-2xl font-semibold">Proceso en Ejecucion</h3>
                 <table id="current-process">
                     <tr>
-                        <th>Nombre</th>
+                        <th>NAME</th>
                         <th>ID</th>
-                        <th>TME</th>
                         <th>OPE</th>
+                        <th>TME</th>
                         <th>TT</th>
                         <th>TR</th>
                     </tr>
@@ -53,13 +53,13 @@
             </div>
 
             <div>
-                <h2 class="text-2xl font-semibold">Procesos Terminados</h2>
+                <h3 class="text-2xl font-semibold">Procesos Terminados</h3>
                 <table id="ended-process">
                     <tr>
                         <th>ID</th>
                         <th>OPE</th>
                         <th>RES</th>
-                        <th>LOTE</th>
+                        <th>BATCH</th>
                     </tr>
                 </table>
             </div>

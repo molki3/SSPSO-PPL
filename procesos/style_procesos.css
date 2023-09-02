@@ -29,7 +29,6 @@ body {
 }
 
 .btn {
-    margin-top: 10px;
     background-color: #C9F1B9;
     border: none;
     border-radius: 5px;
@@ -44,41 +43,21 @@ body {
     background-color: #BAE1AA;
 }
 
-h3 {
-    font-size: 25px;
-}
-
-
-
-
-
-
-
-
 /* Estilos para main */
-#main {
+main {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    text-align: center;
     width: 60%;
-    border-radius: 1rem;
-    background-color: #E5E7EB;
-    padding: 2.5rem;
     display: none;
 }
 
 /* Estilos para h1 */
-h1.text-5xl {
+h1 {
     font-weight: 800;
     font-size: 2.5rem;
-}
-
-/* Estilos para h2 */
-h2.text-3xl {
-    font-weight: 600;
-    font-size: 1.875rem;
-}
-
-h2.text-2xl {
-    font-weight: 600;
-    font-size: 1.5rem;
 }
 
 .batch-content{
@@ -89,17 +68,19 @@ h2.text-2xl {
 
 /* Estilos para tablas */
 table {
-    border-collapse: collapse;
     width: 100%;
-}
-
-table, th, td {
-    border: 1px solid #000;
+   border: 1px solid #999;
+   text-align: left;
+   border-collapse: collapse;
+   margin: 0 0 1em 0;
+   caption-side: top;
 }
 
 th, td {
+    border-bottom: 1px solid #999;
+    width: 25%;
     padding: 0.5rem;
-    text-align: left;
+    text-align: center;
 }
 
 #timer {
