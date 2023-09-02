@@ -47,3 +47,82 @@ body {
 h3 {
     font-size: 25px;
 }
+
+
+
+
+
+
+
+
+/* Estilos para main */
+#main {
+    width: 60%;
+    border-radius: 1rem;
+    background-color: #E5E7EB;
+    padding: 2.5rem;
+    display: none;
+}
+
+/* Estilos para h1 */
+h1.text-5xl {
+    font-weight: 800;
+    font-size: 2.5rem;
+}
+
+/* Estilos para h2 */
+h2.text-3xl {
+    font-weight: 600;
+    font-size: 1.875rem;
+}
+
+h2.text-2xl {
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.batch-content{
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+/* Estilos para tablas */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table, th, td {
+    border: 1px solid #000;
+}
+
+th, td {
+    padding: 0.5rem;
+    text-align: left;
+}
+
+#timer {
+    font-size: larger;
+}
+
+
+
+
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 2s linear infinite;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
