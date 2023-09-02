@@ -29,6 +29,7 @@ body {
 }
 
 .btn {
+    margin-top: 10px;
     background-color: #C9F1B9;
     border: none;
     border-radius: 5px;
