@@ -93,6 +93,7 @@ function cargarProceso() {
     document.getElementById('h3').textContent = "Datos del proceso " + no_proceso + ".";
 }
 
+
 function validarInput(input) {
     var valor = input.value;
     var patron = /^[0-9+\-*/%.]+$/;
@@ -101,6 +102,7 @@ function validarInput(input) {
         input.value = valor.slice(0, -1); // Eliminar el último carácter no válido
     }
 }
+
 
 function soloNumeros(input) {
     var valor = input.value;
@@ -111,15 +113,18 @@ function soloNumeros(input) {
     }
 }
 
+
 async function clear() {
     if(no_proceso > procesos){
         //window.location.href = "../otra/index.html";
 
+        //actualiza screen
         document.getElementById('main').style = "display: inline-block;";
         document.getElementById('calculator').style = "display: none;";
 
         await delay(1000);
 
+        //llama funcion principal
         batchProcessing(lotes);
     }
     document.getElementById('id').value = '';
@@ -127,6 +132,7 @@ async function clear() {
     document.getElementById('operacion').value = '';
     document.getElementById('tiempo').value = '';
 }
+
 
 function validarID(id)
 {
@@ -146,10 +152,12 @@ function validarID(id)
     return true;
 }
 
+
 function actualizarContador() {
     segundosTranscurridos++;
     timerElement.textContent = `Tiempo transcurrido: ${segundosTranscurridos} segundos`;
 }
+
 
 function Tiempos() {
     tiempo_transcurrido++;
@@ -158,6 +166,7 @@ function Tiempos() {
     document.getElementById('tiempor').textContent = `${tiempo_restante}`;
 }
 
+  
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -188,6 +197,7 @@ function batchStructure(lotes){
         }
     }
 }
+
 
 async function batchProcessing(lotes){
 
