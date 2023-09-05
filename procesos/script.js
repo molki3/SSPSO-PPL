@@ -71,6 +71,12 @@ function cargarProceso() {
             clear();
             return;
         }
+        else if(isNaN(result))
+        {
+            alert("Operacion invalida.");
+            clear();
+            return;
+        }
     } catch (error) {
         alert("Operacion invalida.");
         clear();
