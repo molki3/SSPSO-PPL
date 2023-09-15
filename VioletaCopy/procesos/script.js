@@ -114,19 +114,19 @@ async function batchProcessing(lotes){
     console.log(batch);
 
     //inicia contador global
-    intervalID = setInterval(actualizarContador, 1000);
+    //intervalID = setInterval(actualizarContador, 1000);
 
     while(currentProcess<procesos){
         
         for (let i = 0; i < 5; i++) {
 
+            //termina si no hay procesos
+            if(currentProcess==procesos) break;
+
             //console.log(batch[currentBatch][i]);
             //termina contador local
             clearInterval(intervalT);
             tiempo_transcurrido = batch[currentBatch][i].tt;
-
-            //termina si no hay procesos
-            if(currentProcess==procesos) break;
 
             //document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr><td></td><td></td><td></td><td></td><td id='tiempot'></td><td id='tiempor'></td>";
 
@@ -169,23 +169,25 @@ async function batchProcessing(lotes){
     }
 
     //termina contador global
-    clearInterval(intervalID);
+    clearInterval(intervalT);
 
     //limpia proceso actual
     document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr>";
 }
 
-function actualizarContador() {
+/*function actualizarContador() {
     segundosTranscurridos++;
     timerElement.textContent = `Tiempo transcurrido: ${segundosTranscurridos} segundos`;
-}
+}*/
 
 
 function Tiempos() {
     tiempo_transcurrido++;
     tiempo_restante--;
+    segundosTranscurridos++;
     document.getElementById('tiempot').textContent = `${tiempo_transcurrido}`;
     document.getElementById('tiempor').textContent = `${tiempo_restante}`;
+    timerElement.textContent = `Tiempo transcurrido: ${segundosTranscurridos} segundos`;
    // console.log("Tiempo transcurrido: " + tiempo_transcurrido);
     //console.log("Tiempo restante: " + tiempo_restante);
 }
