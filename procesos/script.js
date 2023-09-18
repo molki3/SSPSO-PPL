@@ -186,11 +186,6 @@ async function batchProcessing(lotes){
     document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr>";
 }
 
-/*function actualizarContador() {
-    segundosTranscurridos++;
-    timerElement.textContent = `Tiempo transcurrido: ${segundosTranscurridos} segundos`;
-}*/
-
 
 function Tiempos() {
     if (!isPaused) {
@@ -225,7 +220,7 @@ function delayWithKeyPress(ms, cB, currentProcess, auxprocess) {
         }, ms);
 
         function keyHandler(event) {
-            if (event.key === 'e' || event.key === 'E') {
+            if ((event.key === 'e' || event.key === 'E') && !isPaused) {
                 clearTimeout(timeoutId);
                 document.removeEventListener('keydown', keyHandler);
                 console.log('ERROR');
@@ -234,7 +229,7 @@ function delayWithKeyPress(ms, cB, currentProcess, auxprocess) {
                 currentProcess++;
                 resolve(currentProcess);
             }
-            if (event.key === 'i' || event.key === 'I') {
+            if ((event.key === 'i' || event.key === 'I') && !isPaused) {
                 clearTimeout(timeoutId);
                 document.removeEventListener('keydown', keyHandler);
                 console.log('Interrupcion');
@@ -243,7 +238,7 @@ function delayWithKeyPress(ms, cB, currentProcess, auxprocess) {
                 keyPressed = true;
                 resolve(currentProcess);
             }
-            if (event.key === 'p') {
+            if (event.key === 'p' && !isPaused) {
                 clearTimeout(timeoutId); // Pausar el temporizador
                 isPaused = true;
                 console.log('El programa está pausado. Presione "c" para continuar.');
@@ -265,8 +260,6 @@ function delayWithKeyPress(ms, cB, currentProcess, auxprocess) {
         document.addEventListener('keydown', keyHandler);
     });
 }
-
-
 
 
 /*------------------------------------- GENERAR PROCESOS --------------------------------------------------------- */
