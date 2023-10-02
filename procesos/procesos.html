@@ -2,35 +2,43 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora</title>
+    <title>FCFS</title>
     <link rel="stylesheet" type="text/css" href="style_procesos.css">
 </head>
 <body>
 
     <main id="main">
 
-        <div class="my-5">
-            <h1>Batch Programming</h1>
-        </div>
-
         <div>
-            <h2 id="remaining-batch">Lote(s) restante(s)</h2>
+            <h1>FCFS</h1>
         </div>
 
         <div class="batch-content">
 
             <div>
-                <h3 class="text-2xl font-semibold">Lote Actual</h3>
+                <h3>Nuevos</h3>
+                <table id="new-process">
+                    <tr>
+                        <th>ID</th>
+                        <th>TME</th>
+                        <th>TT</th>
+                    </tr>
+                </table>
+            </div>
+            
+            <div>
+                <h3 class="text-2xl font-semibold">Listos</h3>
                 <table id="current-batch">
                     <tr>
                         <th>ID</th>
                         <th>TME</th>
+                        <th>TT</th>
                     </tr>
                 </table>
             </div>
 
             <div>
-                <h3 class="text-2xl font-semibold">Proceso en Ejecucion</h3>
+                <h3 class="text-2xl font-semibold">En Ejecución</h3>
                 <table id="current-process">
                     <tr>
                         <th>ID</th>
@@ -51,13 +59,28 @@
             </div>
 
             <div>
-                <h3 class="text-2xl font-semibold">Procesos Terminados</h3>
+                <h3 class="text-2xl font-semibold">Bloqueados</h3>
+                <table id="blocked-process">
+                    <tr>
+                        <th>ID</th>
+                        <th>TT</th>
+                    </tr>
+                </table>
+            </div>
+
+            <div>
+                <h3 class="text-2xl font-semibold">Terminados</h3>
                 <table id="ended-process">
                     <tr>
                         <th>ID</th>
                         <th>OPE</th>
                         <th>RES</th>
-                        <th>BATCH</th>
+                        <th>TL</th>
+                        <th>TF</th>
+                        <th>TR</th>
+                        <th>TRES</th>
+                        <th>TE</th>
+                        <th>TS</th>
                     </tr>
                 </table>
             </div>

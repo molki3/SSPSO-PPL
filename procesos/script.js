@@ -9,23 +9,29 @@ var no_proceso = 1;
 
 console.log(procesos);
 
-let segundosTranscurridos = 0;
-const timerElement = document.getElementById('timer');
+let globalTime = 0;
+const globalTimer = document.getElementById('timer');
 var intervalID;
 
 //TR y TT
 let tiempo_transcurrido = 0;
-let tiempo_restante;
+let tiempo_restante = 0;
 const tiempoTranscurrido = document.getElementById('tiempot');
 const tiempoRestante = document.getElementById('tiempor');
 var intervalT;
 
 class Process {
-    constructor(id, operacion, tme, tt) {
+    constructor(id, operacion, tme, tt, tl, tf, tr, tres, te, ts) {
         this.id = id;
         this.operacion = operacion;
         this.tme = tme;
         this.tt = tt;
+        this.tl = tl;
+        this.tf = tf;
+        this.tr = tr;
+        this.tres = tres;
+        this.te = te;
+        this.ts = ts;
     }
 }
 
@@ -38,6 +44,9 @@ let proces = [];
 let batch = [];
 let batchCopy = [];
 let endedProcesses = [];
+
+// Procesos bloqueados
+let blockedBatch = [];
 
 let totalBatch = 0;
 let currentBatch = 0;
@@ -72,6 +81,7 @@ async function clear() {
     }
 }
 
+// ESTRUCTURAR PROCESOS EN LOTES
 function batchStructure(lotes){
 
     let c = 0;
@@ -102,80 +112,68 @@ function batchStructure(lotes){
 
 async function batchProcessing(lotes){
 
-    batchStructure (lotes); //estructura procesos por lotes
+    let currentProcess = 0; //inicializacion de procesos
 
-    //console.log(batch);
-
-    let currentBatch = 0;   //lote actual
-    let currentProcess = 0; //proceso actual
-
-    //establece primer muestra de lotes restantes
-    document.getElementById('remaining-batch').textContent = `Lote(s) restante(s): ${totalBatch - currentBatch - 1}`;
-
-    //copia del arreglo de lotes
-    batchCopy = batch[currentBatch].slice();
-    console.log(batchCopy);
-    console.log(batch);
-
-    //inicia contador global
-    //intervalID = setInterval(actualizarContador, 1000);
+    let processCopy = lotes.slice(); // copia de los procesos
 
     while(currentProcess<procesos){
-        
-        //for (let i = 0; i < 5; i++) {
-        while (batchCopy.length>0) {
 
-            console.log(currentProcess + " " + procesos)
+        console.log(currentProcess + " : " + procesos)
 
-            //termina si no hay procesos
-            if(currentProcess==procesos) break;
+        //termina si no hay procesos
+        if(currentProcess==procesos) break;
 
-            //console.log(batch[currentBatch][i]);
-            //termina contador local
-            clearInterval(intervalT);
-            tiempo_transcurrido = batchCopy[0].tt;
+        //termina contador local
+        clearInterval(intervalT);
 
-            //document.getElementById('current-process').innerHTML = "<tr><th>NAME</th><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr><td></td><td></td><td></td><td></td><td id='tiempot'></td><td id='tiempor'></td>";
+        // auxiliar del proceso actual
+        let aux_process = processCopy[0];
 
-            let aux_process = batchCopy[0];
+        //actualiza proceso actual
+        document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>  <tr><td>" + processCopy[0].id + " </td> <td> " + processCopy[0].operacion + " </td> <td> " + processCopy[0].tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> </tr>";
 
-            //actualiza proceso actual
-            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>  <tr><td>" + batchCopy[0].id + " </td> <td> " + batchCopy[0].operacion + " </td> <td> " + batchCopy[0].tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> </tr>";
+        //saca primer proceso del lote
+        processCopy.shift();
 
-            //saca primer proceso del lote
-            batchCopy.shift();
+        //TIEMPO DE RESUESTA
+        aux_process.tres = globalTime;
 
-            //actualiza lote actual
-            document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
-            for (let j = 0; j < batchCopy.length; j++) {
-                document.getElementById('current-batch').innerHTML += "<tr> <td> " + batchCopy[j].id + " </td> <td> " + batchCopy[j].tme + " </td> <td> " + batchCopy[j].tt + " </td> </tr>";
-            }
+        console.log(processCopy)
 
-            tiempo_restante = aux_process.tme - aux_process.tt;
-            var tiempo_restante_aux = tiempo_restante;
-            intervalT = setInterval(Tiempos, 1000);
-
-            //await delay(tiempo_restante_aux * 1000); //detiene por TME
-            //await delayWithKeyPress(tiempo_restante_aux * 1000, currentBatch, currentProcess, aux_process);
-
-            await delayWithKeyPress(tiempo_restante_aux * 1000, currentBatch, currentProcess, aux_process).then(newCurrentProcess => {
-                currentProcess = newCurrentProcess; // Actualizar currentProcess
-            });
-
-            //endedProcesses.push(batch[currentBatch][i]);    //agrega proceso a terminados
-
-            //currentProcess++;   //siguiente proceso
+        //actualiza procesos nuevos
+        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
+        for (let j = 5; j < processCopy.length; j++) {
+            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
-        
-        if(currentProcess==procesos) break; //termina si no hay procesos
-        
-        currentBatch++; //actualiza al nuevo lote
 
-        //console.log("entra lote " + currentBatch + ", proceso: " + currentProcess);
+        //actualiza procesos listos
+        document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
+        const limit = processCopy.length >= 5 ? 5 : processCopy.length;
 
-        document.getElementById('remaining-batch').textContent = `Lote(s) restante(s) ${totalBatch - currentBatch - 1}`; //actualiza lote restante
+        for (let j = 0; j < limit; j++) {
+            // TIEMPO DE LLEGADA
+            if(processCopy[j].tl == 0){
+                processCopy[j].tl = globalTime;
+            }
+            document.getElementById('current-batch').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+        }
 
-        batchCopy = batch[currentBatch].slice();    //actualiza copia de la estructura de procesos
+        tiempo_transcurrido = aux_process.tt;
+        tiempo_restante = aux_process.tme - aux_process.tt;
+
+        //reinicia tt y tr, continua globalTimer
+        intervalT = setInterval(Tiempos, 1000);
+
+        console.log("proceso actual: ", aux_process.id);
+
+        await delayWithKeyPress(tiempo_restante * 1000, currentProcess, aux_process).then(newCurrentProcess => {
+            currentProcess = newCurrentProcess; // Actualizar currentProcess
+        });
+
+        document.getElementById('blocked-process').innerHTML = "<tr><th>ID</th><th>TT</th></tr>";
+        for (let j = 0; j < blockedBatch.length; j++) {
+            document.getElementById('blocked-process').innerHTML += "<tr> <td> " + blockedBatch[j].id + " </td> <td> " + blockedBatch[j].tt + " </td></tr>";
+        }
 
     }
 
@@ -191,30 +189,31 @@ function Tiempos() {
     if (!isPaused) {
         tiempo_transcurrido++;
         tiempo_restante--;
-        segundosTranscurridos++;
+        globalTime++;
         document.getElementById('tiempot').textContent = `${tiempo_transcurrido}`;
         document.getElementById('tiempor').textContent = `${tiempo_restante}`;
-        timerElement.textContent = `Tiempo transcurrido: ${segundosTranscurridos} segundos`;
+        globalTimer.textContent = `Tiempo transcurrido: ${globalTime} segundos`;
     }
-}
-
-function togglePause() {
-    isPaused = !isPaused;
 }
   
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function delayWithKeyPress(ms, cB, currentProcess, auxprocess) {
+function delayWithKeyPress(ms, currentProcess, auxprocess) {
     let keyPressed = false;
 
     return new Promise((resolve, reject) => {
         timeoutId = setTimeout(() => {
             document.removeEventListener('keydown', keyHandler);
             if (!keyPressed) {
-                document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + (parseInt(cB) + 1) + " </td> </tr>"    
+                auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
+                auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
+                auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
+                auxprocess.te = auxprocess.tf - auxprocess.ts; //TIEMPO DE ESPERA
+                document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                 currentProcess++;
+                console.log("entraaa " + auxprocess.id);
             }
             resolve(currentProcess);
         }, ms);
@@ -224,9 +223,13 @@ function delayWithKeyPress(ms, cB, currentProcess, auxprocess) {
                 clearTimeout(timeoutId);
                 document.removeEventListener('keydown', keyHandler);
                 console.log('ERROR');
-                document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> ERROR </td> <td> " + (parseInt(cB) + 1) + " </td> </tr>"
-                keyPressed = true;
+                auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
+                auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
+                auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
+                auxprocess.te = auxprocess.tf - auxprocess.ts; //TIEMPO DE ESPERA
+                document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> ERROR </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";                keyPressed = true;
                 currentProcess++;
+                console.log("entraaa " + auxprocess.id);
                 resolve(currentProcess);
             }
             if ((event.key === 'i' || event.key === 'I') && !isPaused) {
@@ -234,22 +237,28 @@ function delayWithKeyPress(ms, cB, currentProcess, auxprocess) {
                 document.removeEventListener('keydown', keyHandler);
                 console.log('Interrupcion');
                 auxprocess.tt = tiempo_transcurrido;
-                batchCopy.push(auxprocess);
+                blockedBatch.push(auxprocess);
                 keyPressed = true;
+                console.log("entraaa " + auxprocess.id);
                 resolve(currentProcess);
             }
             if (event.key === 'p' && !isPaused) {
                 clearTimeout(timeoutId); // Pausar el temporizador
                 isPaused = true;
                 console.log('El programa está pausado. Presione "c" para continuar.');
+                console.log("entraaa " + auxprocess.id);
             } 
             if (event.key === 'c' && isPaused) {
                 // Reanudar el temporizador con el tiempo restante
                 const tiempoRestanteMs = tiempo_restante * 1000;
                 timeoutId = setTimeout(() => {
                     if (!keyPressed) {
-                        document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + (parseInt(cB) + 1) + " </td> </tr>"
-                        currentProcess++;
+                        auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
+                        auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
+                        auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
+                        auxprocess.te = auxprocess.tf - auxprocess.ts; //TIEMPO DE ESPERA
+                        document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";                        currentProcess++;
+                        console.log("entraaa " + auxprocess.id);
                     }
                     resolve(currentProcess);
                 }, tiempoRestanteMs);
@@ -301,7 +310,7 @@ function generarProcesos(id) {
     
     var tiempo = Math.floor(Math.random() * 13) + 6;
 
-    var lote = new Process(id,operacion,tiempo, 0);
+    var lote = new Process(id, operacion, tiempo, 0, 0, 0, 0, 0, 0, 0);
 
     lotes[no_lote] = [];
     lotes[no_lote] = lote;
