@@ -177,7 +177,9 @@ async function batchProcessing(lotes){
         document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
         const limit = processCopy.length >= 5 ? 5 : processCopy.length;
 
-        for (let j = 0; j < limit; j++) {
+        console.log(limit-blockedBatch.length-1)
+
+        for (let j = 0; j < limit-blockedBatch.length-1; j++) {
             // TIEMPO DE LLEGADA
             if(processCopy[j].tl == -1){
                 processCopy[j].tl = globalTime;
@@ -228,7 +230,7 @@ function Tiempos() {
         document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
         const limit = processCopy.length >= 5 ? 5 : processCopy.length;
 
-        for (let j = 0; j < limit; j++) {
+        for (let j = 0; j < limit-blockedBatch.length-1; j++) {
             // TIEMPO DE LLEGADA
             if(processCopy[j].tl == -1){
                 processCopy[j].tl = globalTime;
@@ -254,7 +256,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
                     auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
                     auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
-                    auxprocess.te = auxprocess.tf - auxprocess.ts; //TIEMPO DE ESPERA
+                    auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
                     document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                     endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                 }
@@ -279,7 +281,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
                     auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
                     auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
-                    auxprocess.te = auxprocess.tf - auxprocess.ts; //TIEMPO DE ESPERA
+                    auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
                     document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> ERROR </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                     endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                 }
@@ -287,7 +289,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 currentProcess++;
                 resolve(currentProcess);
             }
-            if ((event.key === 'i' || event.key === 'I') && !isPaused) {
+            if ((event.key === 'i' || event.key === 'I') && !isPaused && blockedBatch.length<4) {
                 document.removeEventListener('keydown', keyHandler);
 
                 if(endedProcesses.includes(auxprocess.id)){
@@ -320,7 +322,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                         auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
                         auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
                         auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
-                        auxprocess.te = auxprocess.tf - auxprocess.ts; //TIEMPO DE ESPERA
+                        auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
                         document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                         endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                     }
