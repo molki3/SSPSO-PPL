@@ -23,6 +23,7 @@ var intervalT;
 var intervalB;
 
 let aux_tres;
+let limit;
 
 class Process {
     constructor(id, operacion, tme, tt, tl, tf, tr, tres, te, ts, tb) {
@@ -59,7 +60,7 @@ let currentBatch = 0;
 let remainingBatch = totalBatch - currentBatch;
 
 //indice para meter de bloqueados a listos
-let index_back = 5;
+//let index_back = 0;
 
 /*---------------------------------------------------------------------------------------------- */
 window.onload = load();
@@ -154,7 +155,7 @@ async function batchProcessing(lotes){
             console.log(processCopy.length + " - " + blockedBatch.length + " - " + blockedBatch[0].tb*1000);
             console.log(processCopy)
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>";    //limpia proceso
-            await delay((blockedBatch[0].tb+1)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
+            await delay((blockedBatch[0].tb+0.1)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
             aux_process = processCopy[0];
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>  <tr><td>" + aux_process.id + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> </tr>";
         }
@@ -162,22 +163,12 @@ async function batchProcessing(lotes){
         //saca primer proceso del lote
         processCopy.shift();
 
-        //TIEMPO DE RESUESTA
-        if(aux_process.tres == 'new'){
-            aux_process.tres = globalTime;
-        }
-
-        //actualiza procesos nuevos
-        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
-        for (let j = 5; j < processCopy.length; j++) {
-            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
-        }
-
         //actualiza procesos listos
         document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
-        const limit = processCopy.length >= 5 ? 5 : processCopy.length;
+        limit = processCopy.length >= 5 ? 5 : processCopy.length+1;
 
         console.log(limit-blockedBatch.length-1)
+        console.log(processCopy)
 
         for (let j = 0; j < limit-blockedBatch.length-1; j++) {
             // TIEMPO DE LLEGADA
@@ -185,6 +176,17 @@ async function batchProcessing(lotes){
                 processCopy[j].tl = globalTime;
             }
             document.getElementById('current-batch').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+        }
+
+        //TIEMPO DE RESUESTA
+        if(aux_process.tres == 'new'){
+            aux_process.tres = globalTime - aux_process.tl;
+        }
+
+        //actualiza procesos nuevos
+        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
+        for (let j = limit-blockedBatch.length-1; j < processCopy.length; j++) {
+            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
 
         tiempo_transcurrido = aux_process.tt;
@@ -228,7 +230,7 @@ function Tiempos() {
         }
 
         document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
-        const limit = processCopy.length >= 5 ? 5 : processCopy.length;
+        limit = processCopy.length >= 5 ? 5 : processCopy.length+1;
 
         for (let j = 0; j < limit-blockedBatch.length-1; j++) {
             // TIEMPO DE LLEGADA
@@ -236,6 +238,12 @@ function Tiempos() {
                 processCopy[j].tl = globalTime;
             }
             document.getElementById('current-batch').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+        }
+
+        //actualiza procesos nuevos
+        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
+        for (let j = limit-blockedBatch.length-1; j < processCopy.length; j++) {
+            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
     }
 }
@@ -354,12 +362,12 @@ function updateBlockedProcesses() {
             // Si el tiempo de bloqueo llega a 0, quita el proceso de la lista de bloqueados
             blockedBatch.splice(i, 1);
             if(blockedBatch.length>0){
-                processCopy.splice(index_back, 0, aux);
-                index_back++;    
+                processCopy.splice(limit-blockedBatch.length-2, 0, aux);
+                //index_back++;    
             }
             else{
-                processCopy.splice(index_back, 0, aux);
-                index_back = 5;
+                processCopy.splice(limit-blockedBatch.length-2, 0, aux);
+                //index_back = 0;
             }
             console.log("METIDO DE NUEVo")
             console.log(processCopy);
