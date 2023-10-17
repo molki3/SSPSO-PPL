@@ -13,6 +13,8 @@ let globalTime = 0;
 const globalTimer = document.getElementById('timer');
 var intervalID;
 
+let evento = false;
+
 //TR y TT
 let tiempo_transcurrido = 0;
 let tiempo_restante = 0;
@@ -64,8 +66,7 @@ let totalBatch = 0;
 let currentBatch = 0;
 let remainingBatch = totalBatch - currentBatch;
 
-//indice para meter de bloqueados a listos
-//let index_back = 0;
+let index_new_process = 0;
 
 /*---------------------------------------------------------------------------------------------- */
 window.onload = load();
@@ -132,6 +133,8 @@ async function batchProcessing(lotes){
     processCopy = lotes.slice(); // copia de los procesos
 
     processCopy[0].tl = 0;
+
+    evento = true;
 
     while(currentProcess<procesos){
 
@@ -383,6 +386,14 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 isPaused = false; // Reanudar el temporizador
                 console.log('El programa continuará.');
             }
+            if (event.key === 'n' || event.key === 'N') {
+                console.log('NUEVO');
+                procesos = parseInt(procesos)+1;
+                console.log(procesos)
+                generarProcesos(procesos);
+                console.log(lotes)
+                index_new_process++;
+            }
         }
         document.addEventListener('keydown', keyHandler);
     });
@@ -457,10 +468,15 @@ function generarProcesos(id) {
 
     var lote = new Process(id, operacion, tiempo, 0, -1, 0, 0, 'new', 0, 0, 0, 0);
 
-    lotes[no_lote] = [];
-    lotes[no_lote] = lote;
-    no_lote++;
-    no_proceso++;
+    if(!evento){
+        lotes[no_lote] = [];
+        lotes[no_lote] = lote;
+        no_lote++;
+        no_proceso++;
+    }else{
+        processCopy.push(lote)
+        lotes.push(lote)
+    }
 }
 
 
