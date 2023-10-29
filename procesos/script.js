@@ -44,6 +44,8 @@ class Process {
     }
 }
 
+let aux_process;
+
 let view = false;
 
 let isPaused = false;
@@ -151,7 +153,7 @@ async function batchProcessing(lotes){
         intervalT = setInterval(Tiempos, 1000);
 
         // auxiliar del proceso actual
-        let aux_process = processCopy[0];
+        aux_process = processCopy[0];
 
         //actualiza proceso actual
         if(aux_process){
@@ -229,6 +231,10 @@ function Tiempos() {
         } catch (error) {
             console.log("Esperando proceso...")
         }
+
+        console.log(tiempo_transcurrido);
+
+        aux_process.ts = tiempo_transcurrido;
         
         globalTimer.textContent = `Tiempo transcurrido: ${globalTime} segundos`;
 
@@ -387,11 +393,8 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 console.log('El programa continuará.');
             }
             if (event.key === 'n' || event.key === 'N') {
-                console.log('NUEVO');
                 procesos = parseInt(procesos)+1;
-                console.log(procesos)
                 generarProcesos(procesos);
-                console.log(lotes)
                 index_new_process++;
             }
         }
