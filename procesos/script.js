@@ -288,7 +288,8 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 console.log("quantumm");
                 tiempo_quantum = 0;
                 auxprocess.tt = tiempo_transcurrido;
-                processCopy.push(auxprocess);
+                //processCopy.push(auxprocess);
+                processCopy.splice(limit, 0, auxprocess);
                 document.removeEventListener('keydown', keyHandler);
                 clearInterval(intervalId);
                 clearTimeout(timeoutId);
@@ -411,6 +412,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                         }
                     }
 
+                    tiempo_quantum = 0;
                     document.removeEventListener('keydown', keyHandler);
                     clearTimeout(timeoutId1); //termina contador de continuacion
                     resolve(currentProcess);
