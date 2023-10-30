@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>FCFS</title>
+    <title>Round Robin</title>
     <link rel="stylesheet" type="text/css" href="style_procesos.css">
     <link rel="stylesheet" type="text/css" href="ventana.css">
 </head>
@@ -31,7 +31,11 @@
     <main id="main">
 
         <div>
-            <h1>FCFS</h1>
+            <h1>Round Robin</h1>
+        </div>
+
+        <div>
+            <h3 id="quantum"></h3>
         </div>
 
         <div class="batch-content">
@@ -67,14 +71,15 @@
                         <th>TME</th>
                         <th>TT</th>
                         <th>TR</th>
+                        <th>QT</th>
                     </tr>
                     <tr>
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td></td>
                         <td id="tiempot"></td>
                         <td id="tiempor"></td>
+                        <td id="tiempoq"></td>
                     </tr>
                 </table>
             </div>

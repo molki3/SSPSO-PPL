@@ -1,5 +1,7 @@
 const urlParams = new URLSearchParams(window.location.search);
 var procesos = urlParams.get('procesos');
+var quantum = urlParams.get('quantum');
+console.log("Quantum: " + quantum);
 var lotes = [];
 var no_lote = 0;
 var ids = 1;
@@ -8,6 +10,8 @@ var no_proceso = 1;
 /*---------------------------------------------------------------------------------------------- */
 
 console.log(procesos);
+
+document.getElementById('quantum').textContent = "Quantum = " + quantum;
 
 let globalTime = 0;
 const globalTimer = document.getElementById('timer');
@@ -19,6 +23,7 @@ let evento = false;
 let tiempo_transcurrido = 0;
 let tiempo_restante = 0;
 let tiempo_bloqueado = 0;
+let tiempo_quantum = 0;
 const tiempoTranscurrido = document.getElementById('tiempot');
 const tiempoRestante = document.getElementById('tiempor');
 var intervalT;
@@ -28,7 +33,7 @@ let aux_tres;
 let limit;
 
 class Process {
-    constructor(id, operacion, tme, tt, tl, tf, tr, tres, te, ts, tb, contadorInterrupciones) {
+    constructor(id, operacion, tme, tt, tl, tf, tr, tres, te, ts, tb, contadorInterrupciones, qt) {
         this.id = id;
         this.operacion = operacion;
         this.tme = tme;
@@ -41,6 +46,7 @@ class Process {
         this.ts = ts;
         this.tb = tb;
         this.contadorInterrupciones = contadorInterrupciones;
+        this.qt = qt;
     }
 }
 
@@ -157,7 +163,7 @@ async function batchProcessing(lotes){
 
         //actualiza proceso actual
         if(aux_process){
-            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>  <tr><td>" + aux_process.id + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> </tr>";
+            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> <td id='tiempoq'></td> </tr>";
         }
         
         //FUNCION CUANDO NO QUEDE NINGUN PROCESOS POR JECCutAR PERO SI EN BLOQUEADOS
@@ -167,7 +173,7 @@ async function batchProcessing(lotes){
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>";    //limpia proceso
             await delay((blockedBatch[0].tb+0.1)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
             aux_process = processCopy[0];
-            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>  <tr><td>" + aux_process.id + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> </tr>";
+            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td><td id='tiempoq'></td> </tr>";
         }
 
         //saca primer proceso del lote
@@ -214,12 +220,13 @@ async function batchProcessing(lotes){
     clearInterval(intervalB);
 
     //limpia proceso actual
-    document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th></tr>";
+    document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th><th>QT</th></tr>";
 }
 
 
 function Tiempos() {
     if (!isPaused) {
+        tiempo_quantum++;
         tiempo_transcurrido++;
         tiempo_restante--;
         globalTime++;
@@ -227,16 +234,17 @@ function Tiempos() {
         //intenta calcular tt y tr si es que hay o no procesos ejecutandose
         try {
             document.getElementById('tiempot').textContent = `${tiempo_transcurrido}`;
-            document.getElementById('tiempor').textContent = `${tiempo_restante}`;    
+            document.getElementById('tiempor').textContent = `${tiempo_restante}`;  
+            document.getElementById('tiempoq').textContent = `${tiempo_quantum}`; //quantum en pantalla  
         } catch (error) {
             console.log("Esperando proceso...")
         }
 
-        console.log(tiempo_transcurrido);
+        console.log(tiempo_quantum + " a " + quantum)
 
         aux_process.ts = tiempo_transcurrido;
         
-        globalTimer.textContent = `Tiempo transcurrido: ${globalTime} segundos`;
+        globalTimer.textContent = `Tiempo transcurrido: ${globalTime} segundos`; //contador global en pantalla
 
         //actualiza los procesos bloqueados
         document.getElementById('blocked-process').innerHTML = "<tr><th>ID</th><th>TT</th></tr>";
@@ -271,9 +279,25 @@ function delay(ms) {
 
 function delayWithKeyPress(ms, currentProcess, auxprocess) {
     let keyPressed = false;
+    let intervalId;
 
     return new Promise((resolve, reject) => {
+        //IMPLEMENTACION DEL QUANTUM
+        intervalId = setInterval(() => {
+            if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme) {
+                console.log("quantumm");
+                tiempo_quantum = 0;
+                auxprocess.tt = tiempo_transcurrido;
+                processCopy.push(auxprocess);
+                document.removeEventListener('keydown', keyHandler);
+                clearInterval(intervalId);
+                clearTimeout(timeoutId);
+                resolve(currentProcess);
+            }
+        }, 1000); // Verifica cada segundo si tiempo_transcurrido es igual a 6
+
         timeoutId = setTimeout(() => {
+            
             document.addEventListener('keydown', keyHandler);
             if (!keyPressed) {
                 // Verifica si el proceso ya está en la lista de procesos finalizados
@@ -282,12 +306,17 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
                     auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
                     auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
+                    tiempo_quantum = 0;
                     document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                     endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                     endedComplete.push(auxprocess);
                 }
                 currentProcess++;
             }
+
+            
+
+            tiempo_quantum = 0;
 
             document.removeEventListener('keydown', keyHandler);
             resolve(currentProcess);
@@ -296,8 +325,6 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
 
 
         function keyHandler(event) {
-            //console.log("TECLA");
-
             if ((event.key === 'e' || event.key === 'E') && !isPaused) {
                 document.removeEventListener('keydown', keyHandler);
                 clearTimeout(timeoutId);
@@ -312,6 +339,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> ERROR </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                     endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                 }
+                tiempo_quantum = 0;
                 keyPressed = true;
                 currentProcess++;//avanza al siguiente proceso
                 resolve(currentProcess);
@@ -326,13 +354,13 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 if(processCopy.includes(auxprocess.id)){
                     return;
                 }
-
                 //console.log('Interrupcion');
                 auxprocess.contadorInterrupciones++;
                 auxprocess.tt = tiempo_transcurrido;
                 auxprocess.tb = 8;
                 blockedBatch.push(auxprocess);
 
+                tiempo_quantum = 0;
                 keyPressed = true;
                 resolve(currentProcess);
             }
@@ -398,6 +426,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 index_new_process++;
             }
         }
+        
         document.addEventListener('keydown', keyHandler);
     });
 }
@@ -469,7 +498,7 @@ function generarProcesos(id) {
     
     var tiempo = Math.floor(Math.random() * 13) + 6;
 
-    var lote = new Process(id, operacion, tiempo, 0, -1, 0, 0, 'new', 0, 0, 0, 0);
+    var lote = new Process(id, operacion, tiempo, 0, -1, 0, 0, 'new', 0, 0, 0, 0, 0);
 
     if(!evento){
         lotes[no_lote] = [];
