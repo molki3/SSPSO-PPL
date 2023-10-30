@@ -1,0 +1,90 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#calculator {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    text-align: center;
+    width: 400px;
+}
+
+.display {
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    padding: 10px;
+    width: 90%;
+    height: 20px;
+    border-radius: 5px;
+    background-color: #E1E1E1;
+    font-size: 20px;
+}
+
+.btn {
+    margin-top: 10px;
+    background-color: #C9F1B9;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 10px;
+    transition: background-color 0.3s;
+    width: 50%;
+}
+
+.btn:hover {
+    background-color: #BAE1AA;
+}
+
+/* Estilos para main */
+main {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    text-align: center;
+    width: 80%;
+    display: none;
+}
+
+/* Estilos para h1 */
+h1 {
+    font-weight: 800;
+    font-size: 2.5rem;
+}
+
+.batch-content{
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+/* Estilos para tablas */
+table {
+    width: 100%;
+   border: 1px solid #999;
+   text-align: left;
+   border-collapse: collapse;
+   margin: 0 0 1em 0;
+   caption-side: top;
+}
+
+th, td {
+    border-bottom: 1px solid #999;
+    width: 25%;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+/* contador global */
+#timer {
+    font-size: larger;
+}
