@@ -317,7 +317,6 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
 
             
 
-            tiempo_quantum = 0;
 
             document.removeEventListener('keydown', keyHandler);
             resolve(currentProcess);
