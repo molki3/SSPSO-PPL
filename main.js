@@ -7,10 +7,23 @@ function enter() {
         alert("El numero de procesos debe ser mayor a 0.");
         return;
     }
+    if(quantum <= 0){
+        alert("El quantum debe ser mayor a 0.");
+        return;
+    }
     window.location.href = './procesos/procesos.html?procesos=' + procesos + '&quantum=' + quantum;
 };
 
 function soloNumeros(input) {
+    var valor = input.value;
+    var patron = /^[0-9]+$/;
+
+    if (!patron.test(valor)) {
+        input.value = valor.slice(0, -1); // Eliminar el último carácter no válido
+    }
+};
+
+function soloNumerosMayorCero(input) {
     var valor = input.value;
     var patron = /^[0-9]+$/;
 
