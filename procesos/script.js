@@ -33,10 +33,11 @@ let aux_tres;
 let limit;
 
 class Process {
-    constructor(id, operacion, tme, tt, tl, tf, tr, tres, te, ts, tb, contadorInterrupciones, qt) {
+    constructor(id, operacion, tme, tamano, tt, tl, tf, tr, tres, te, ts, tb, contadorInterrupciones, qt) {
         this.id = id;
         this.operacion = operacion;
         this.tme = tme;
+        this.tamano = tamano;
         this.tt = tt;
         this.tl = tl;
         this.tf = tf;
@@ -75,6 +76,9 @@ let currentBatch = 0;
 let remainingBatch = totalBatch - currentBatch;
 
 let index_new_process = 0;
+
+//Paginacion
+let memoria = [];
 
 /*---------------------------------------------------------------------------------------------- */
 window.onload = load();
@@ -499,7 +503,9 @@ function generarProcesos(id) {
     
     var tiempo = Math.floor(Math.random() * 13) + 6;
 
-    var lote = new Process(id, operacion, tiempo, 0, -1, 0, 0, 'new', 0, 0, 0, 0, 0);
+    var tamano = Math.floor(Math.random() * 21) + 6;
+
+    var lote = new Process(id, operacion, tiempo, tamano, 0, -1, 0, 0, 'new', 0, 0, 0, 0, 0);
 
     if(!evento){
         lotes[no_lote] = [];
