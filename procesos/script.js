@@ -78,7 +78,7 @@ let remainingBatch = totalBatch - currentBatch;
 let index_new_process = 0;
 
 //Paginacion
-let memoria = [];
+let memoria = 0;
 
 /*---------------------------------------------------------------------------------------------- */
 window.onload = load();
@@ -148,6 +148,9 @@ async function batchProcessing(lotes){
 
     evento = true;
 
+    document.getElementsByClassName("cuadro pag-1")[0].innerHTML = "<p>S.O</p>";
+    document.getElementsByClassName("cuadro pag-15")[0].innerHTML = "<p>S.O</p>";
+
     while(currentProcess<procesos){
 
         //termina si no hay procesos
@@ -167,17 +170,17 @@ async function batchProcessing(lotes){
 
         //actualiza proceso actual
         if(aux_process){
-            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> <td id='tiempoq'></td> </tr>";
+            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td>" + aux_process.tamano + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> <td id='tiempoq'></td> </tr>";
         }
         
         //FUNCION CUANDO NO QUEDE NINGUN PROCESOS POR JECCutAR PERO SI EN BLOQUEADOS
         if(processCopy.length==0 && blockedBatch.length>0){
             //console.log(processCopy.length + " - " + blockedBatch.length + " - " + blockedBatch[0].tb*1000);
             //console.log(processCopy)
-            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>";    //limpia proceso
+            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>";    //limpia proceso
             await delay((blockedBatch[0].tb+0.1)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
             aux_process = processCopy[0];
-            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td><td id='tiempoq'></td> </tr>";
+            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td>" + aux_process.tamano + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td><td id='tiempoq'></td> </tr>";
         }
 
         //saca primer proceso del lote
@@ -193,6 +196,15 @@ async function batchProcessing(lotes){
 
         //actualiza procesos listos
         document.getElementById('current-batch').innerHTML = "<tr><th>ID</?th><th>TME</th><th>TT</th></tr>";
+
+        console.log("inicio");
+        for(let i = 0; i < blockedBatch.length; i++){
+            let paginas = 0;
+            paginas = blockedBatch[i].tamano/5;
+            console.log(paginas);
+        }
+        console.log("fin");
+
         limit = processCopy.length > 5 ? 5-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=5 ? processCopy.length : 5-1-blockedBatch.length;
 
         //console.log(limit)
@@ -224,7 +236,7 @@ async function batchProcessing(lotes){
     clearInterval(intervalB);
 
     //limpia proceso actual
-    document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th><th>QT</th></tr>";
+    document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th><th>QT</th></tr>";
 }
 
 
@@ -244,7 +256,7 @@ function Tiempos() {
             console.log("Esperando proceso...")
         }
 
-        console.log(tiempo_quantum + " a " + quantum)
+        //console.log(tiempo_quantum + " a " + quantum)
 
         aux_process.ts = tiempo_transcurrido;
         
@@ -312,15 +324,12 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
                     auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
                     tiempo_quantum = 0;
-                    document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
+                    document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.tamano + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                     endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                     endedComplete.push(auxprocess);
                 }
                 currentProcess++;
             }
-
-            
-
 
             document.removeEventListener('keydown', keyHandler);
             resolve(currentProcess);
@@ -340,7 +349,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
                     auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
                     errorProcesses.push(auxprocess);
-                    document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> ERROR </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
+                    document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.tamano + " </td> <td> " + auxprocess.operacion + " </td> <td> ERROR </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                     endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                 }
                 tiempo_quantum = 0;
@@ -408,7 +417,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                             auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
                             auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
                             auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
-                            document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
+                            document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.tamano + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                             endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                             endedComplete.push(auxprocess);
                             currentProcess++;   //avanza al sig proceso
@@ -522,7 +531,7 @@ function generarProcesos(id) {
 function mostrarVentanaEmergente(auxprocess) {
     bcpKey = true;
     document.getElementById('ventanaEmergente').style.display = 'block';
-    document.getElementById('bcp-table').innerHTML = "<tr><th>Id</th><th>Estado</th><th>Operacion y datos</th><th>Resultado</th><th>T. Llegada</th><th>T. Finalizacion</th><th>T. Retorno</th><th>T. Espera</th><th>T. Servicio</th><th>T. Respuesta</th><th>T. Restante en CPU</th></tr>";
+    document.getElementById('bcp-table').innerHTML = "<tr><th>Id</th><th>Tamano</th><th>Estado</th><th>Operacion y datos</th><th>Resultado</th><th>T. Llegada</th><th>T. Finalizacion</th><th>T. Retorno</th><th>T. Espera</th><th>T. Servicio</th><th>T. Respuesta</th><th>T. Restante en CPU</th></tr>";
     for(let c = 0; c < lotes.length;c++){
         let molki = lotes[c];
 
@@ -531,7 +540,7 @@ function mostrarVentanaEmergente(auxprocess) {
             //console.log("El proceso " + lotes[c].id + " es el actual procesado");
             let axRCPU = document.getElementById('tiempor').textContent;
             let axTT = document.getElementById('tiempot').textContent;
-            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td> Procesando... </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + (globalTime - molki.tl - axTT) +"</td><td>" + axTT + "</td><td>" + molki.tres + "</td><td>" + axRCPU + "</td></tr>";
+            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td>" + molki.tamano + "</td> <td> Procesando... </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + (globalTime - molki.tl - axTT) +"</td><td>" + axTT + "</td><td>" + molki.tres + "</td><td>" + axRCPU + "</td></tr>";
         }
 
         //Si el proceso actual esta en Nuevos o listos
@@ -539,18 +548,18 @@ function mostrarVentanaEmergente(auxprocess) {
             let proceso_actual = processCopy.find(objeto => objeto.id === lotes[c].id && objeto.tl === -1);
             if(proceso_actual){
                 //console.log("El proceso " + lotes[c].id + " esta en nuevos");
-                document.getElementById('bcp-table').innerHTML += "<tr> <td>" + proceso_actual.id + "</td> <td> Nuevo </td> <td>"+ proceso_actual.operacion + "</td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>";
+                document.getElementById('bcp-table').innerHTML += "<tr> <td>" + proceso_actual.id + "</td> <td>" + proceso_actual.tamano + "</td> <td> Nuevo </td> <td>"+ proceso_actual.operacion + "</td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>";
             }
             //LISTOS
             else{
                 if(molki.tres == "new")
                 {
                     molki.te = globalTime - molki.tl;
-                    document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td> Listo </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + molki.te +"</td><td>" + molki.tt + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.tt) + "</td></tr>";
+                    document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td>" + molki.tamano + "</td> <td> Listo </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + molki.te +"</td><td>" + molki.tt + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.tt) + "</td></tr>";
                 }
                 else{
                     //console.log("El proceso " + lotes[c].id + " esta en listos");
-                    document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td> Listo </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + (globalTime - molki.tl - molki.tt) +"</td><td>" + molki.tt + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.tt) + "</td></tr>";
+                    document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td>" + molki.tamano + "</td> <td> Listo </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + (globalTime - molki.tl - molki.tt) +"</td><td>" + molki.tt + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.tt) + "</td></tr>";
                 }
                 
             }
@@ -559,19 +568,19 @@ function mostrarVentanaEmergente(auxprocess) {
         //Si el proceso actual esta en bloqueados
         else if(blockedBatch.includes(molki)){
             //console.log("El proceso " + lotes[c].id + " esta en bloqueados");
-            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td> Bloqueado(Restan " + molki.tb + "seg.) </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + (globalTime - molki.tl - molki.tt) +"</td><td>" + molki.tt + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.tt) + "</td></tr>";
+            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td>" + molki.tamano + "</td> <td> Bloqueado(Restan " + molki.tb + "seg.) </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + (globalTime - molki.tl - molki.tt) +"</td><td>" + molki.tt + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.tt) + "</td></tr>";
         }
 
         //Si el proceso actual esta en terminados
         else if(endedComplete.includes(molki)){
             //console.log("El proceso " + lotes[c].id + " esta en terminados");
-            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td> Terminado(Normal) </td> <td>"+ molki.operacion + "</td><td>" + eval(molki.operacion) + "</td><td>" + molki.tl + "</td><td>" + molki.tf + "</td><td>" + molki.tr + "</td><td>" + molki.te +"</td><td>" + molki.ts + "</td><td>" + molki.tres + "</td><td>" + 0 + "</td></tr>";
+            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td>" + molki.tamano + "</td> <td> Terminado(Normal) </td> <td>"+ molki.operacion + "</td><td>" + eval(molki.operacion) + "</td><td>" + molki.tl + "</td><td>" + molki.tf + "</td><td>" + molki.tr + "</td><td>" + molki.te +"</td><td>" + molki.ts + "</td><td>" + molki.tres + "</td><td>" + 0 + "</td></tr>";
         }
 
         //Si el proceso actual esta en terminados por error
         else if(errorProcesses.includes(molki)){
             //console.log("El proceso " + lotes[c].id + " esta en terminados por error");
-            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td> Terminado(Error) </td> <td>"+ molki.operacion + "</td><td>" + "Error" + "</td><td>" + molki.tl + "</td><td>" + molki.tf + "</td><td>" + molki.tr + "</td><td>" + molki.te +"</td><td>" + molki.ts + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.ts) + "</td></tr>";
+            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td>" + molki.tamano + "</td> <td> Terminado(Error) </td> <td>"+ molki.operacion + "</td><td>" + "Error" + "</td><td>" + molki.tl + "</td><td>" + molki.tf + "</td><td>" + molki.tr + "</td><td>" + molki.te +"</td><td>" + molki.ts + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.ts) + "</td></tr>";
         }
     }
 }
