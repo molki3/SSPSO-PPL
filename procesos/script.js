@@ -79,6 +79,7 @@ let index_new_process = 0;
 
 //Paginacion
 let memoria = 0;
+let procesosMemoria = 0;
 
 /*---------------------------------------------------------------------------------------------- */
 window.onload = load();
@@ -148,9 +149,6 @@ async function batchProcessing(lotes){
 
     evento = true;
 
-    document.getElementsByClassName("cuadro pag-1")[0].innerHTML = "<p>S.O</p>";
-    document.getElementsByClassName("cuadro pag-15")[0].innerHTML = "<p>S.O</p>";
-
     while(currentProcess<procesos){
 
         //termina si no hay procesos
@@ -195,39 +193,116 @@ async function batchProcessing(lotes){
         tiempo_restante = aux_process.tme - aux_process.tt;
 
         //actualiza procesos listos
-        document.getElementById('current-batch').innerHTML = "<tr><th>ID</?th><th>TME</th><th>TT</th></tr>";
+        document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>";
 
-        console.log("inicio");
-        for(let i = 0; i < blockedBatch.length; i++){
-            let paginas = 0;
-            paginas = blockedBatch[i].tamano/5;
-            console.log(paginas);
+
+        // PAGINACION SIMPLE - ASIGNACION Y ACUMULACION DE MARCOS DE MEMORIA--------------------------
+        memoria = 0; //cuantos marcos estan ocupados
+        procesosMemoria = 0; //cuantos procesos estan en memoria
+        let limitePag = 1;
+        
+        //Acumulacion de marcos proceso actual
+        if((memoria + Math.ceil(aux_process.tamano/5)) <= 40){
+            memoria += Math.ceil(aux_process.tamano/5);
+            for (limitePag; limitePag <= memoria; limitePag++) {
+                //console.log("cuadro pag-" + limitePag);
+        
+                // Obtén todos los elementos con la clase especificada
+                let elementos = document.getElementsByClassName("cuadro pag-" + limitePag);
+        
+                // Itera sobre la colección y aplica el estilo a cada elemento
+                for (let i = 0; i < elementos.length; i++) {
+                    elementos[i].style.backgroundColor = "red";
+                    elementos[i].innerHTML = aux_process.id;
+                }
+            }
+            procesosMemoria++;
+            //console.log(aux_process.id + " " + Math.ceil(aux_process.tamano/5))
         }
-        console.log("fin");
+        
+        //Acumulacion de marcos procesos bloqueados
+        for(let i = 0; i < blockedBatch.length; i++){
+            if((memoria + Math.ceil(blockedBatch[i].tamano/5)) <= 40){
+                memoria += Math.ceil(blockedBatch[i].tamano/5);
+                for (limitePag; limitePag <= memoria; limitePag++) {
+                    //console.log("cuadro pag-" + limitePag);
+            
+                    // Obtén todos los elementos con la clase especificada
+                    let elementos = document.getElementsByClassName("cuadro pag-" + limitePag);
+            
+                    // Itera sobre la colección y aplica el estilo a cada elemento
+                    for (let j = 0; j < elementos.length; j++) {
+                        elementos[j].style.backgroundColor = "#4B0082";
+                        elementos[j].innerHTML = blockedBatch[i].id;
+                    }
+                }
+                procesosMemoria++;
+                //console.log(blockedBatch[i].id + " " + Math.ceil(blockedBatch[i].tamano/5))
+            }
+            else{
+                break;
+            }
+        }
 
-        limit = processCopy.length > 5 ? 5-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=5 ? processCopy.length : 5-1-blockedBatch.length;
+        for(let i = 0; i < processCopy.length; i++){
+            if((memoria + Math.ceil(processCopy[i].tamano/5)) <= 40){
+                memoria += Math.ceil(processCopy[i].tamano/5);
+                for (limitePag; limitePag <= memoria; limitePag++) {
+                    //console.log("cuadro pag-" + limitePag);
+            
+                    // Obtén todos los elementos con la clase especificada
+                    let elementos = document.getElementsByClassName("cuadro pag-" + limitePag);
+            
+                    // Itera sobre la colección y aplica el estilo a cada elemento
+                    for (let j = 0; j < elementos.length; j++) {
+                        elementos[j].style.backgroundColor = "blue";
+                        elementos[j].innerHTML = processCopy[i].id;
+                    }
+                }
+                procesosMemoria++;
+                //console.log(processCopy[i].id + " " + Math.ceil(processCopy[i].tamano/5))
+            }
+            else{
+                break;
+            }
+        }
 
-        //console.log(limit)
-        //console.log(processCopy)
+        console.log("PROCESOS EN MEMORIA: " + procesosMemoria + ", MARCOS USADOS: " + memoria)
+        //----------------------------
+
+        limit = processCopy.length > procesosMemoria ? procesosMemoria-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=procesosMemoria ? processCopy.length : procesosMemoria-1-blockedBatch.length;
 
         for (let j = 0; j < limit; j++) {
             // TIEMPO DE LLEGADA
             if(processCopy[j].tl == -1){
                 processCopy[j].tl = globalTime;
             }
-            document.getElementById('current-batch').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+            document.getElementById('current-batch').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
 
         //actualiza procesos nuevos
-        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
+        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>";
         for (let j = limit; j < processCopy.length; j++) {
-            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
         
         // funcion de espera de tecla cada que entra un proceso a ejecutarse
         await delayWithKeyPress(tiempo_restante * 1000, currentProcess, aux_process).then(newCurrentProcess => {
             currentProcess = newCurrentProcess; // Actualizar currentProcess
         });
+
+        //LIEMPIEZA DE CUADRICULA
+        for (let i = 1; i <= 40; i++) { //mandarlo al inicio de la funcio
+            let elementos = document.getElementsByClassName("cuadro pag-" + i);
+    
+            // Itera sobre la colección y aplica el estilo a cada elemento
+            for (let i = 0; i < elementos.length; i++) {
+                elementos[i].style.backgroundColor = "#080303";
+                elementos[i].innerHTML = "";
+            }
+        }
+
+        console.log("LIMPIEZA")
     }
 
     //termina contador global
@@ -270,21 +345,21 @@ function Tiempos() {
         }
 
         //actualiza los procesos listos
-        document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>";
-        limit = processCopy.length > 5 ? 5-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=5 ? processCopy.length : 5-1-blockedBatch.length;
+        document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>";
+        limit = processCopy.length > procesosMemoria ? procesosMemoria-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=procesosMemoria ? processCopy.length : procesosMemoria-1-blockedBatch.length;
 
         for (let j = 0; j < limit; j++) {
             // TIEMPO DE LLEGADA
             if(processCopy[j].tl == -1){
                 processCopy[j].tl = globalTime;
             }
-            document.getElementById('current-batch').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+            document.getElementById('current-batch').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
 
         //actualiza procesos nuevos
-        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>TME</th><th>TT</th></tr>"
+        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>"
         for (let j = limit; j < processCopy.length; j++) {
-            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
     }
 }
