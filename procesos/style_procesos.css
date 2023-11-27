@@ -7,7 +7,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: auto;
     margin: 0;
 }
 
@@ -107,4 +107,16 @@ th, td {
     display: inline-block;
     place-content: center;
     align-items: center
+}
+
+.decimal{
+    background: linear-gradient(to left, black 50%, red 50%);
+}
+
+.decimal_blocked{
+    background: linear-gradient(to left, black 50%, #4B0082 50%);
+}
+
+.decimal_processes{
+    background: linear-gradient(to left, black 50%, blue 50%);
 }
