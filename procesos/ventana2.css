@@ -1,0 +1,29 @@
+.ventana2 {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: auto;
+    height: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.contenido2 {
+    background-color: #080303;
+    /*background-color: #fff;*/
+    margin: auto auto;
+    padding: 20px;
+    width: auto;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+
+.cerrar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 10px;
+    cursor: pointer;
+}

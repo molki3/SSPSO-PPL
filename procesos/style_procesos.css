@@ -93,20 +93,50 @@ th, td {
     font-size: larger;
 }
 
+
+
 /*paginacion*/
 #paginacion {
-    margin-top: 50px;
+    display: inline-block;
+}
+
+.fila{
+    display: flex;
 }
 
 .cuadro {
-    width: 50px;
-    height: 50px;
-    display: flex;
+    width: 70px;
+    height: 70px;
     /*border: 1px solid black;*/
     border: 1px solid white;
-    display: inline-block;
-    place-content: center;
-    align-items: center
+    position: relative;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.cuadro-contenido{
+    z-index: 1;
+    position: absolute;
+    top: 20%;
+    left: 30%;
+    white-space: pre;
+    font-size: large;
+}
+
+.divisiones{
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.division{
+    /*border: 1px solid black;*/
+    border: 1px solid rgb(97, 97, 127);
+    width: 20%;
+    height: 100%;
 }
 
 .decimal{

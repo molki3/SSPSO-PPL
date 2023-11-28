@@ -5,6 +5,7 @@
     <title id="main-title">Paginacion Simple</title>
     <link rel="stylesheet" type="text/css" href="style_procesos.css">
     <link rel="stylesheet" type="text/css" href="ventana.css">
+    <link rel="stylesheet" type="text/css" href="ventana2.css">
 </head>
 <body>
 
@@ -23,6 +24,17 @@
                     <th>T. Espera</th>
                     <th>T. Servicio</th>
                     <th>T. Respuesta</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="ventanaEmergente2" class="ventana2">
+        <div class="contenido2">
+            <h2>Tabla de paginas</h2>
+            <table id="tabla-paginas">
+                <tr>
+                    <th>HOLA</th>
                 </tr>
             </table>
         </div>
@@ -119,60 +131,75 @@
 
         <p id="timer">Tiempo transcurrido: 0 segundos</p>
 
-        <div id="paginacion">
+        <div>
+            <h2 id=""> Tabla de Paginas </h2>
+        </div>
+
+        <div>
+            <h3 id=""> Proceso </h3>
+            <h3 id=""> Marco:Paginas </h3>
+        </div>
+
+        <div id="paginacion" class="contenedor-cuadros">
             <!-- Primera fila -->
-            <div class="cuadro pag-1" ></div>
-            <div class="cuadro pag-2"></div>
-            <div class="cuadro pag-3"></div>
-            <div class="cuadro pag-4"></div>
-            <div class="cuadro pag-5"></div>
-            <div class="cuadro pag-6"></div>
-            <div class="cuadro pag-7"></div>
-            <div class="cuadro pag-8"></div>
-            <div class="cuadro pag-9"></div>
-            <div class="cuadro pag-10"></div>
-            <br>
+            <div class="fila">
+                <div class="cuadro pag-1"></div>
+                <div class="cuadro pag-2"></div>
+                <div class="cuadro pag-3"></div>
+                <div class="cuadro pag-4"></div>
+                <div class="cuadro pag-5"></div>
+                <div class="cuadro pag-6"></div>
+                <div class="cuadro pag-7"></div>
+                <div class="cuadro pag-8"></div>
+                <div class="cuadro pag-9"></div>
+                <div class="cuadro pag-10"></div>
+            </div>
             <!-- Segunda fila -->
-            <div class="cuadro pag-11"></div>
-            <div class="cuadro pag-12"></div>
-            <div class="cuadro pag-13"></div>
-            <div class="cuadro pag-14"></div>
-            <div class="cuadro pag-15"></div>
-            <div class="cuadro pag-16"></div>
-            <div class="cuadro pag-17"></div>
-            <div class="cuadro pag-18"></div>
-            <div class="cuadro pag-19"></div>
-            <div class="cuadro pag-20"></div>
-            <br>
+            <div class="fila">
+                <div class="cuadro pag-11"></div>
+                <div class="cuadro pag-12"></div>
+                <div class="cuadro pag-13"></div>
+                <div class="cuadro pag-14"></div>
+                <div class="cuadro pag-15"></div>
+                <div class="cuadro pag-16"></div>
+                <div class="cuadro pag-17"></div>
+                <div class="cuadro pag-18"></div>
+                <div class="cuadro pag-19"></div>
+                <div class="cuadro pag-20"></div>
+            </div>
             <!-- Tercera fila -->
-            <div class="cuadro pag-21"></div>
-            <div class="cuadro pag-22"></div>
-            <div class="cuadro pag-23"></div>
-            <div class="cuadro pag-24"></div>
-            <div class="cuadro pag-25"></div>
-            <div class="cuadro pag-26"></div>
-            <div class="cuadro pag-27"></div>
-            <div class="cuadro pag-28"></div>
-            <div class="cuadro pag-29"></div>
-            <div class="cuadro pag-30"></div>
-            <br>
+            <div class="fila">
+                <div class="cuadro pag-21"></div>
+                <div class="cuadro pag-22"></div>
+                <div class="cuadro pag-23"></div>
+                <div class="cuadro pag-24"></div>
+                <div class="cuadro pag-25"></div>
+                <div class="cuadro pag-26"></div>
+                <div class="cuadro pag-27"></div>
+                <div class="cuadro pag-28"></div>
+                <div class="cuadro pag-29"></div>
+                <div class="cuadro pag-30"></div>
+            </div>
             <!-- Cuarta fila -->
-            <div class="cuadro pag-31"></div>
-            <div class="cuadro pag-32"></div>
-            <div class="cuadro pag-33"></div>
-            <div class="cuadro pag-34"></div>
-            <div class="cuadro pag-35"></div>
-            <div class="cuadro pag-36"></div>
-            <div class="cuadro pag-37"></div>
-            <div class="cuadro pag-38"></div>
-            <div class="cuadro pag-39"></div>
-            <div class="cuadro pag-40"></div>
-            <br>
+            <div class="fila">
+                <div class="cuadro pag-31"></div>
+                <div class="cuadro pag-32"></div>
+                <div class="cuadro pag-33"></div>
+                <div class="cuadro pag-34"></div>
+                <div class="cuadro pag-35"></div>
+                <div class="cuadro pag-36"></div>
+                <div class="cuadro pag-37"></div>
+                <div class="cuadro pag-38"></div>
+                <div class="cuadro pag-39"></div>
+                <div class="cuadro pag-40"></div>
+            </div>
             <!-- Quinta fila -->
-            <div class="cuadro pag-41"><p>S.O</p></div>
-            <div class="cuadro pag-42"><p>S.O</p></div>
-            <div class="cuadro pag-43"><p>S.O</p></div>
-            <div class="cuadro pag-44"><p>S.O</p></div>
+            <div class="fila">
+                <div class="cuadro pag-41"><div class="cuadro-contenido">S.O<br>41:5</div></div>
+                <div class="cuadro pag-42"><div class="cuadro-contenido">S.O<br>42:5</div></div>
+                <div class="cuadro pag-43"><div class="cuadro-contenido">S.O<br>43:5</div></div>
+                <div class="cuadro pag-44"><div class="cuadro-contenido">S.O<br>44:5</div></div>
+            </div>
         </div>
  
     </main>

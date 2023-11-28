@@ -15,8 +15,6 @@ document.getElementById('quantum').textContent = "Quantum = " + quantum;
 
 let globalTime = 0;
 const globalTimer = document.getElementById('timer');
-var intervalID;
-
 let evento = false;
 
 //TR y TT
@@ -31,6 +29,8 @@ var intervalB;
 
 let aux_tres;
 let limit;
+
+//let sinProceso = false;
 
 class Process {
     constructor(id, operacion, tme, tamano, tt, tl, tf, tr, tres, te, ts, tb, contadorInterrupciones, qt) {
@@ -58,6 +58,7 @@ let view = false;
 let isPaused = false;
 let timeoutId; // Variable global para mantener el ID del temporizador
 let timeoutId1;
+var intervalId; //Verifica quantum
 
 let proces = [];
 let batch = [];
@@ -67,6 +68,7 @@ let processCopy = [];
 let errorProcesses = [];
 let endedComplete = [];
 let bcpKey = false;
+let tpKey = false;
 
 // Procesos bloqueados
 let blockedBatch = [];
@@ -77,11 +79,13 @@ let totalBatch = 0;
 let currentBatch = 0;
 let remainingBatch = totalBatch - currentBatch;
 
-//Paginacion
+//Paginacion simple
 let memoria = 0;
 let procesosMemoria = 0;
 let elementos;
 let limitePag = 1;
+
+hideProcess = false;
 
 /*---------------------------------------------------------------------------------------------- */
 window.onload = load();
@@ -140,6 +144,152 @@ function batchStructure(lotes){
     }
 }
 
+function actualizarMemoria(){
+
+    // PAGINACION SIMPLE - ASIGNACION Y ACUMULACION DE MARCOS DE MEMORIA--------------------------
+    memoria = 0; //cuantos marcos estan ocupados
+    procesosMemoria = 0; //cuantos procesos estan en memoria
+    limitePag = 1; //limite inferior de marco por proceso
+    let porcentajeCuadro = 0;
+
+    limpiarMemoria();
+
+    //Acumulacion de marcos proceso actual
+    if(!hideProcess){
+        if((memoria + Math.ceil(aux_process.tamano/5)) <= 40){
+            memoria += Math.ceil(aux_process.tamano/5);
+            
+            for (limitePag; limitePag <= memoria; limitePag++) {
+                //console.log("cuadro pag-" + limitePag);
+        
+                // Obtén todos los elementos con la clase especificada
+                elementos = document.getElementsByClassName("pag-" + limitePag);
+
+                //elementos[0].classList.remove('decimal_blocked');
+                //elementos[0].classList.remove('decimal');
+                //elementos[0].classList.remove('decimal_processes');
+                elementos[0].style.background = "";
+    
+                if(!Number.isInteger(aux_process.tamano/5) && limitePag === memoria){
+                    porcentajeCuadro = Math.round((1-((Math.ceil(aux_process.tamano/5))-(aux_process.tamano/5))) * 100);
+                    if(porcentajeCuadro>40){
+                        elementos[0].style.background = "linear-gradient(to right, red " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                    }else{
+                        elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, red " + porcentajeCuadro + "%)";
+                    }
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                    //elementos[0].className += " decimal";
+                }else{
+                    elementos[0].style.backgroundColor = "red";
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + limitePag + ":" + 5 +'</div>';
+                }
+                //elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + " " + limitePag + ":" + porcentajeCuadro/10 +'</div>';
+            }
+            procesosMemoria++;
+            //console.log(aux_process.id + " " + Math.ceil(aux_process.tamano/5))
+        }
+    }
+
+    //Acumulacion de marcos procesos bloqueados
+    for(let i = 0; i < blockedBatch.length; i++){
+        if((memoria + Math.ceil(blockedBatch[i].tamano/5)) <= 40){
+            memoria += Math.ceil(blockedBatch[i].tamano/5);
+
+            for (limitePag; limitePag <= memoria; limitePag++) {
+                //console.log("cuadro pag-" + limitePag);
+        
+                // Obtén todos los elementos con la clase especificada 
+                elementos = document.getElementsByClassName("pag-" + limitePag);
+
+                //elementos[0].classList.remove('decimal_blocked');
+                //elementos[0].classList.remove('decimal');
+                //elementos[0].classList.remove('decimal_processes');
+                elementos[0].style.background = "";
+
+                if(!Number.isInteger(blockedBatch[i].tamano/5) && limitePag === memoria){
+                    porcentajeCuadro = Math.round((1-((Math.ceil(blockedBatch[i].tamano/5))-(blockedBatch[i].tamano/5))) * 100);
+                    //elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, #4B0082 " + porcentajeCuadro + "%)";
+                    if(porcentajeCuadro>40){
+                        elementos[0].style.background = "linear-gradient(to right, #4B0082 " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                    }else{
+                        elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, #4B0082 " + porcentajeCuadro + "%)";
+                    }
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+blockedBatch[i].id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                    //elementos[0].className += " decimal_blocked";
+                }else{
+                    elementos[0].style.backgroundColor = "#4B0082";
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+blockedBatch[i].id + "\n" + limitePag + ":" + 5 +'</div>';
+                }
+                //elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+blockedBatch[i].id+'</div>';
+            }
+            procesosMemoria++;
+            //console.log(blockedBatch[i].id + " " + Math.ceil(blockedBatch[i].tamano/5))
+        }
+        else{
+            break;
+        }
+    }
+
+    //Acumulacion de marcos procesos listos
+    for(let i = 0; i < processCopy.length; i++){
+        if((memoria + Math.ceil(processCopy[i].tamano/5)) <= 40){
+
+            memoria += Math.ceil(processCopy[i].tamano/5);
+            
+            for (limitePag; limitePag <= memoria; limitePag++) {
+                //console.log("cuadro pag-" + limitePag);
+        
+                // Obtén todos los elementos con la clase especificada 
+                elementos = document.getElementsByClassName("pag-" + limitePag);
+
+                //elementos[0].classList.remove('decimal_blocked');
+                //elementos[0].classList.remove('decimal');
+                //elementos[0].classList.remove('decimal_processes');
+                elementos[0].style.background = "";
+
+                if(!Number.isInteger(processCopy[i].tamano/5) && limitePag === memoria){
+                    porcentajeCuadro = Math.round((1-((Math.ceil(processCopy[i].tamano/5))-(processCopy[i].tamano/5))) * 100);
+                    //elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, blue " + porcentajeCuadro + "%)";
+                    if(porcentajeCuadro>40){
+                        elementos[0].style.background = "linear-gradient(to right, blue " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                    }else{
+                        elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, blue " + porcentajeCuadro + "%)";
+                    }
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+processCopy[i].id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                    //elementos[0].className += " decimal_processes";
+                }else{
+                    elementos[0].style.backgroundColor = "blue";
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+processCopy[i].id + "\n" + limitePag + ":" + 5 +'</div>';
+                }
+                //elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+processCopy[i].id+'</div>';
+            }
+            procesosMemoria++;
+            //console.log(processCopy[i].id + " " + Math.ceil(processCopy[i].tamano/5))
+        }
+        else{
+            break;
+        }
+    }
+
+    //console.log("PROCESOS EN MEMORIA: " + procesosMemoria + ", MARCOS USADOS: " + memoria)
+    //----------------------------
+}
+
+function limpiarMemoria(){
+    //LIEMPIEZA DE CUADRICULA-----------------------------------------
+    for (let i = 1; i <= 40; i++) { //mandarlo al inicio de la funcio
+        let elementos = document.getElementsByClassName("cuadro pag-" + i);
+
+        elementos[0].style.backgroundColor = "#080303";
+        elementos[0].style.background = "";
+        elementos[0].innerHTML = i+":"+0;
+        //elementos[0].classList.remove('decimal_blocked');
+        //elementos[0].classList.remove('decimal');  
+        //elementos[0].classList.remove('decimal_processes');
+        
+    }
+    //-----------------------------------------------------------------
+}
 
 async function batchProcessing(lotes){
 
@@ -159,11 +309,6 @@ async function batchProcessing(lotes){
         //termina contador local
         clearInterval(intervalT);
 
-        // PAGINACION SIMPLE - ASIGNACION Y ACUMULACION DE MARCOS DE MEMORIA--------------------------
-        memoria = 0; //cuantos marcos estan ocupados
-        procesosMemoria = 0; //cuantos procesos estan en memoria
-        limitePag = 1; //limite inferior de marco por proceso
-
         //inicia tiempo de procesos bloqueados, se relaciona con metodos en Tiempos()
         intervalB = setInterval(updateBlockedProcesses, 1000);
         
@@ -171,21 +316,24 @@ async function batchProcessing(lotes){
         intervalT = setInterval(Tiempos, 1000);
 
         // auxiliar del proceso actual
-        aux_process = processCopy[0];
+        if(processCopy.length==0 && blockedBatch.length>0){
+            //CUANDO NO QUEDE NINGUN PROCESOS POR JECCutAR PERO SI EN BLOQUEADOS
+            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>";    //limpia proceso
+            hideProcess = true;
+            await delay((blockedBatch[0].tb+1)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
+            aux_process = processCopy[0];
+            hideProcess = false;
+            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td>" + aux_process.tamano + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td><td id='tiempoq'></td> </tr>";
+        }
+        else{
+            aux_process = processCopy[0];
+        }
 
+        
         //actualiza proceso actual
         if(aux_process){
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td>" + aux_process.tamano + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> <td id='tiempoq'></td> </tr>";
-        }
-        
-        //FUNCION CUANDO NO QUEDE NINGUN PROCESOS POR JECCutAR PERO SI EN BLOQUEADOS
-        if(processCopy.length==0 && blockedBatch.length>0){
-            //console.log(processCopy.length + " - " + blockedBatch.length + " - " + blockedBatch[0].tb*1000);
-            //console.log(processCopy)
-            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>";    //limpia proceso
-            await delay((blockedBatch[0].tb+0.1)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
-            aux_process = processCopy[0];
-            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td>" + aux_process.tamano + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td><td id='tiempoq'></td> </tr>";
+            tiempo_quantum = 0;
         }
 
         //saca primer proceso del lote
@@ -201,94 +349,8 @@ async function batchProcessing(lotes){
 
         //actualiza procesos listos
         document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>";
-        
-        //Acumulacion de marcos proceso actual
-        if((memoria + Math.ceil(aux_process.tamano/5)) <= 40){
-            memoria += Math.ceil(aux_process.tamano/5);
-            
-            for (limitePag; limitePag <= memoria; limitePag++) {
-                //console.log("cuadro pag-" + limitePag);
-        
-                // Obtén todos los elementos con la clase especificada
-                elementos = document.getElementsByClassName("pag-" + limitePag);
-                elementos[0].classList.remove('decimal_blocked');
-                elementos[0].classList.remove('decimal');
-                elementos[0].classList.remove('decimal_processes');
 
-                if(!Number.isInteger(aux_process.tamano/5) && limitePag === memoria){
-                    elementos[0].className += " decimal";
-                }else{
-                    elementos[0].style.backgroundColor = "red";
-                }
-                elementos[0].innerHTML = aux_process.id;
-            }
-            procesosMemoria++;
-            //console.log(aux_process.id + " " + Math.ceil(aux_process.tamano/5))
-        }
-        
-        //Acumulacion de marcos procesos bloqueados
-        for(let i = 0; i < blockedBatch.length; i++){
-            if((memoria + Math.ceil(blockedBatch[i].tamano/5)) <= 40){
-                memoria += Math.ceil(blockedBatch[i].tamano/5);
-
-                for (limitePag; limitePag <= memoria; limitePag++) {
-                    //console.log("cuadro pag-" + limitePag);
-            
-                    // Obtén todos los elementos con la clase especificada 
-                    elementos = document.getElementsByClassName("cuadro pag-" + limitePag);
-                    elementos[0].classList.remove('decimal_blocked');
-                    elementos[0].classList.remove('decimal');
-                    elementos[0].classList.remove('decimal_processes');
-
-                    if(!Number.isInteger(blockedBatch[i].tamano/5) && limitePag === memoria){
-                        elementos[0].className += " decimal_blocked";
-                    }else{
-                        elementos[0].style.backgroundColor = "#4B0082";
-                    }
-                    elementos[0].innerHTML = blockedBatch[i].id;
-
-                }
-                procesosMemoria++;
-                //console.log(blockedBatch[i].id + " " + Math.ceil(blockedBatch[i].tamano/5))
-            }
-            else{
-                break;
-            }
-        }
-
-        //Acumulacion de marcos procesos listos
-        for(let i = 0; i < processCopy.length; i++){
-            if((memoria + Math.ceil(processCopy[i].tamano/5)) <= 40){
-
-                memoria += Math.ceil(processCopy[i].tamano/5);
-                
-                for (limitePag; limitePag <= memoria; limitePag++) {
-                    //console.log("cuadro pag-" + limitePag);
-            
-                    // Obtén todos los elementos con la clase especificada 
-                    elementos = document.getElementsByClassName("cuadro pag-" + limitePag);
-                    elementos[0].classList.remove('decimal_blocked');
-                    elementos[0].classList.remove('decimal');
-                    elementos[0].classList.remove('decimal_processes');
-
-                    if(!Number.isInteger(processCopy[i].tamano/5) && limitePag === memoria){
-                        elementos[0].className += " decimal_processes";
-                    }else{
-                        elementos[0].style.backgroundColor = "blue";
-                    }
-                    elementos[0].innerHTML = processCopy[i].id;
-
-                }
-                procesosMemoria++;
-                //console.log(processCopy[i].id + " " + Math.ceil(processCopy[i].tamano/5))
-            }
-            else{
-                break;
-            }
-        }
-
-        //console.log("PROCESOS EN MEMORIA: " + procesosMemoria + ", MARCOS USADOS: " + memoria)
-        //----------------------------
+        actualizarMemoria();
 
         limit = processCopy.length > procesosMemoria ? procesosMemoria-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=procesosMemoria ? processCopy.length : procesosMemoria-1-blockedBatch.length;
 
@@ -311,28 +373,21 @@ async function batchProcessing(lotes){
             currentProcess = newCurrentProcess; // Actualizar currentProcess
         });
 
-        //LIEMPIEZA DE CUADRICULA-----------------------------------------
-        for (let i = 1; i <= 40; i++) { //mandarlo al inicio de la funcio
-            let elementos = document.getElementsByClassName("cuadro pag-" + i);
-            
-    
-            // Itera sobre la colección y aplica el estilo a cada elemento
-            for (let i = 0; i < elementos.length; i++) {
-                elementos[0].style.backgroundColor = "#080303";
-                elementos[0].innerHTML = "";
-                elementos[0].classList.remove('decimal_blocked');
-                elementos[0].classList.remove('decimal');  
-                elementos[0].classList.remove('decimal_processes');
-            }
-        }
-        //-----------------------------------------------------------------
-
     }
 
     //termina contador global
     clearInterval(intervalT);
 
     clearInterval(intervalB);
+                
+    clearTimeout(timeoutId);
+
+    clearInterval(intervalId);
+    console.log("termina programa");
+
+    evento = false;
+
+    limpiarMemoria();
 
     //limpia proceso actual
     document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th><th>QT</th></tr>";
@@ -346,14 +401,19 @@ function Tiempos() {
         tiempo_restante--;
         globalTime++;
 
+        actualizarMemoria();
+
+        //sinProceso = false;
+
+        //proceso para bloquear la interrupcion en caso de posible bug -------------------------
         bloqueoI = false;
 
-        if(blockedBatch.length==0 && aux_process.tme-tiempo_transcurrido<quantum && processCopy.length==1){
-            console.log(aux_process.tme-tiempo_transcurrido)
+        if(blockedBatch.length>=0 && aux_process.tme-tiempo_transcurrido<quantum && processCopy.length==1){
             bloqueoI = true;
         }
+        //--------------------------------------------------------------------------------------
 
-        //intenta calcular tt y tr si es que hay o no procesos ejecutandose
+        //intenta calcular tt y tr si es que hay o no procesos ejecutandose---------------------
         try {
             document.getElementById('tiempot').textContent = `${tiempo_transcurrido}`;
             document.getElementById('tiempor').textContent = `${tiempo_restante}`;  
@@ -361,8 +421,7 @@ function Tiempos() {
         } catch (error) {
             console.log("Esperando proceso...")
         }
-
-        //console.log(tiempo_quantum + " a " + quantum)
+        //--------------------------------------------------------------------------------------
 
         aux_process.ts = tiempo_transcurrido;
         
@@ -387,8 +446,6 @@ function Tiempos() {
             document.getElementById('current-batch').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
 
-        
-
         //actualiza procesos nuevos
         document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>"
         for (let j = limit; j < processCopy.length; j++) {
@@ -403,29 +460,32 @@ function delay(ms) {
 
 function delayWithKeyPress(ms, currentProcess, auxprocess) {
     let keyPressed = false;
-    let intervalId;
-    let continueC = false;
 
     return new Promise((resolve, reject) => {
+
         //IMPLEMENTACION DEL QUANTUM
         intervalId = setInterval(() => {
-            if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme) {
-                //console.log("quantumm");
+            console.log("verificando QUANTUM", tiempo_quantum)
+            //if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme && !isPaused && !sinProceso) {
+            if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme && !isPaused) {
+                console.log("Regresa desde QUANTUM");
                 tiempo_quantum = 0;
                 auxprocess.tt = tiempo_transcurrido;
                 processCopy.splice(limit, 0, auxprocess);
+
                 document.removeEventListener('keydown', keyHandler);
                 clearInterval(intervalId);
                 clearTimeout(timeoutId);
                 resolve(currentProcess);
             }
+            if(!evento){console.log("mata quantum");clearInterval(intervalId);resolve(currentProcess);}
         }, 1000); // Verifica cada segundo si tiempo_transcurrido es igual a 6
 
         timeoutId = setTimeout(() => {
             document.addEventListener('keydown', keyHandler);
             if (!keyPressed) {
                 // Verifica si el proceso ya está en la lista de procesos finalizados
-                if (!endedProcesses.includes(auxprocess.id) && tiempo_transcurrido==auxprocess.tme) {        
+                if (!endedProcesses.includes(auxprocess.id) && tiempo_transcurrido==auxprocess.tme && !isPaused) {        
                     auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
                     auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
                     auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
@@ -445,10 +505,11 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
 
 
         function keyHandler(event) {
+
             if ((event.key === 'e' || event.key === 'E') && !isPaused && !(processCopy.length==0 && blockedBatch.length>0)) {
                 document.removeEventListener('keydown', keyHandler);
                 clearTimeout(timeoutId);
-                //console.log('ERROR');
+                clearInterval(intervalId);
                 // Verifica si el proceso ya está en la lista de procesos finalizados
                 if (!endedProcesses.includes(auxprocess.id)) {
                     auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
@@ -464,11 +525,11 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 currentProcess++;//avanza al siguiente proceso
                 resolve(currentProcess);
             }
-            if ((event.key === 'i' || event.key === 'I') && !isPaused && blockedBatch.length<procesosMemoria-1 && !bloqueoI) { // y tiempo_restante es mayor o igual al tiempo del ultimo quantum
-                document.removeEventListener('keydown', keyHandler);
 
-                
-                //console.log('Interrupcion');
+            //if ((event.key === 'i' || event.key === 'I') && !isPaused && blockedBatch.length<procesosMemoria-1 && !bloqueoI) { // y tiempo_restante es mayor o igual al tiempo del ultimo quantum
+            if ((event.key === 'i' || event.key === 'I') && !isPaused) {
+                document.removeEventListener('keydown', keyHandler);
+                limpiarMemoria();
                 auxprocess.contadorInterrupciones++;
                 auxprocess.tt = tiempo_transcurrido;
                 auxprocess.tb = 8;
@@ -481,12 +542,14 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 keyPressed = true;
                 resolve(currentProcess);
             }
+
             if (event.key === 'p' && !isPaused) {
                 clearTimeout(timeoutId); // Pausar el temporizador
                 isPaused = true;
                 keyPressed = true;
-                console.log('El programa está pausado. Presione "c" para continuar. Proceso : ' + auxprocess.id);            
+                console.log('El programa está pausado. Presione "c" para continuar. Proceso : ' + auxprocess.id);      
             }
+
             if (event.key === 'b' && !isPaused) {
                 clearTimeout(timeoutId); // Pausar el temporizador
                 isPaused = true;
@@ -503,47 +566,34 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 console.log(processCopy);
                 console.log("Procesos terminado en error:");
                 console.log(errorProcesses);
-                
             }
+
+            if (event.key === 't' && !isPaused) {
+                clearTimeout(timeoutId); // Pausar el temporizador
+                isPaused = true;
+                keyPressed = true;
+                mostrarVentanaEmergente2();
+                console.log('El programa está pausado. Presione "c" para continuar. Proceso : ' + auxprocess.id);
+            }
+
             if (event.key === 'c' && isPaused) {
+                
                 if(bcpKey){
                     cerrarVentanaEmergente();
                     bcpKey = false;
                 }
+
+                if(tpKey){
+                    cerrarVentanaEmergente2();
+                    tpKey = false;
+                }
+
                 // Reanudar el temporizador con el tiempo restante
-                isPaused = false; // Reanudar el temporizador
                 keyPressed = false;
-                continueC = true;
-                //const tiempoRestanteMs = tiempo_restante * 1000; //cambiar por restante de quantum
-                const tiempoRestanteMs = (quantum - tiempo_quantum) * 1000;
-                console.log(tiempoRestanteMs)
-
-                timeoutId1 = setTimeout(() => {
-                    if(!keyPressed){
-                        if (!endedProcesses.includes(auxprocess.id) && tiempo_restante==0) {
-                            auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
-                            auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
-                            auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
-                            auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
-                            document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.tamano + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
-                            endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
-                            endedComplete.push(auxprocess);
-                            currentProcess++;   //avanza al sig proceso
-                            clearTimeout(timeoutId1); //termina contador de continuacion
-                        }
-                    }
-
-                    continueC = false;
-                    
-                    
-
-                }, tiempoRestanteMs);
-                
-                tiempo_quantum = 0;
-                resolve(currentProcess);
-                document.removeEventListener('keydown', keyHandler);
+                isPaused = false; // Reanudar el temporizador
                 console.log('El programa continuará.');
             }
+
             if (event.key === 'n' || event.key === 'N') {
                 procesos = parseInt(procesos)+1;
                 generarProcesos(procesos);
@@ -551,6 +601,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
         }
         
         document.addEventListener('keydown', keyHandler);
+        
     });
 }
 
@@ -569,14 +620,8 @@ function updateBlockedProcesses() {
         }else {
             // Si el tiempo de bloqueo llega a 0, quita el proceso de la lista de bloqueados
             blockedBatch.splice(i, 1);
-            if(blockedBatch.length>0){
                 processCopy.splice(limit, 0, aux);
-                //index_back++;    
-            }
-            else{
-                processCopy.splice(limit, 0, aux);
-                //index_back = 0;
-            }
+                //index_back++;   
         }
     }
 }
@@ -696,4 +741,13 @@ function mostrarVentanaEmergente(auxprocess) {
 
 function cerrarVentanaEmergente() {
     document.getElementById('ventanaEmergente').style.display = 'none';
+}
+
+function mostrarVentanaEmergente2() {
+    tpKey = true;
+    document.getElementById('ventanaEmergente2').style.display = 'block';
+}
+
+function cerrarVentanaEmergente2() {
+    document.getElementById('ventanaEmergente2').style.display = 'none';
 }
