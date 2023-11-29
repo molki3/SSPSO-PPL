@@ -81,6 +81,7 @@ let remainingBatch = totalBatch - currentBatch;
 
 //Paginacion simple
 let memoria = 0;
+let procesosEnMemoria = [];
 let procesosMemoria = 0;
 let elementos;
 let limitePag = 1;
@@ -291,6 +292,262 @@ function limpiarMemoria(){
     //-----------------------------------------------------------------
 }
 
+function meterProcesos(){
+
+    // PAGINACION SIMPLE - ASIGNACION Y ACUMULACION DE MARCOS DE MEMORIA--------------------------
+    memoria = 0; //cuantos marcos estan ocupados
+    procesosMemoria = 0; //cuantos procesos estan en memoria
+    limitePag = 1; //limite inferior de marco por proceso
+    let porcentajeCuadro = 0;
+
+    limpiarMemoria();
+
+    //Acumulacion de marcos proceso actual
+    if(!hideProcess){
+        if((memoria + Math.ceil(aux_process.tamano/5)) <= 40){
+            memoria += Math.ceil(aux_process.tamano/5);
+            
+            for (limitePag; limitePag <= memoria; limitePag++) {
+                //console.log("cuadro pag-" + limitePag);
+        
+                // Obtén todos los elementos con la clase especificada
+                elementos = document.getElementsByClassName("pag-" + limitePag);
+
+                elementos[0].style.background = "";
+    
+                if(!Number.isInteger(aux_process.tamano/5) && limitePag === memoria){
+                    porcentajeCuadro = Math.round((1-((Math.ceil(aux_process.tamano/5))-(aux_process.tamano/5))) * 100);
+                    if(porcentajeCuadro>40){
+                        elementos[0].style.background = "linear-gradient(to right, red " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                    }else{
+                        elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, red " + porcentajeCuadro + "%)";
+                    }
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                    //elementos[0].className += " decimal";
+                }else{
+                    elementos[0].style.backgroundColor = "red";
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + limitePag + ":" + 5 +'</div>';
+                }
+                procesosEnMemoria[limitePag-1]=aux_process.id;
+                //elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + " " + limitePag + ":" + porcentajeCuadro/10 +'</div>';
+            }
+            procesosMemoria++;
+            //console.log(aux_process.id + " " + Math.ceil(aux_process.tamano/5))
+        }
+    }
+
+    //Acumulacion de marcos procesos bloqueados
+    for(let i = 0; i < blockedBatch.length; i++){
+        if((memoria + Math.ceil(blockedBatch[i].tamano/5)) <= 40){
+            memoria += Math.ceil(blockedBatch[i].tamano/5);
+
+            for (limitePag; limitePag <= memoria; limitePag++) {
+                //console.log("cuadro pag-" + limitePag);
+        
+                // Obtén todos los elementos con la clase especificada 
+                elementos = document.getElementsByClassName("pag-" + limitePag);
+
+                elementos[0].style.background = "";
+
+                if(!Number.isInteger(blockedBatch[i].tamano/5) && limitePag === memoria){
+                    porcentajeCuadro = Math.round((1-((Math.ceil(blockedBatch[i].tamano/5))-(blockedBatch[i].tamano/5))) * 100);
+                    //elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, #4B0082 " + porcentajeCuadro + "%)";
+                    if(porcentajeCuadro>40){
+                        elementos[0].style.background = "linear-gradient(to right, #4B0082 " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                    }else{
+                        elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, #4B0082 " + porcentajeCuadro + "%)";
+                    }
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+blockedBatch[i].id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                    //elementos[0].className += " decimal_blocked";
+                }else{
+                    elementos[0].style.backgroundColor = "#4B0082";
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+blockedBatch[i].id + "\n" + limitePag + ":" + 5 +'</div>';
+                }
+                procesosEnMemoria[limitePag-1]=blockedBatch[i].id;
+                //elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+blockedBatch[i].id+'</div>';
+            }
+            procesosMemoria++;
+            //console.log(blockedBatch[i].id + " " + Math.ceil(blockedBatch[i].tamano/5))
+        }
+        else{
+            break;
+        }
+    }
+
+    //Acumulacion de marcos procesos listos
+    for(let i = 0; i < processCopy.length; i++){
+        if((memoria + Math.ceil(processCopy[i].tamano/5)) <= 40){
+
+            memoria += Math.ceil(processCopy[i].tamano/5);
+            
+            for (limitePag; limitePag <= memoria; limitePag++) {
+                //console.log("cuadro pag-" + limitePag);
+        
+                // Obtén todos los elementos con la clase especificada 
+                elementos = document.getElementsByClassName("pag-" + limitePag);
+
+                elementos[0].style.background = "";
+
+                if(!Number.isInteger(processCopy[i].tamano/5) && limitePag === memoria){
+                    porcentajeCuadro = Math.round((1-((Math.ceil(processCopy[i].tamano/5))-(processCopy[i].tamano/5))) * 100);
+                    //elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, blue " + porcentajeCuadro + "%)";
+                    if(porcentajeCuadro>40){
+                        elementos[0].style.background = "linear-gradient(to right, blue " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                    }else{
+                        elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, blue " + porcentajeCuadro + "%)";
+                    }
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+processCopy[i].id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                    //elementos[0].className += " decimal_processes";
+                }else{
+                    elementos[0].style.backgroundColor = "blue";
+                    elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+processCopy[i].id + "\n" + limitePag + ":" + 5 +'</div>';
+                }
+                procesosEnMemoria[limitePag-1]=processCopy[i].id;
+                //elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+processCopy[i].id+'</div>';
+            }
+            procesosMemoria++;
+            //console.log(processCopy[i].id + " " + Math.ceil(processCopy[i].tamano/5))
+        }
+        else{
+            break;
+        }
+    }
+
+    //console.log("PROCESOS EN MEMORIA: " + procesosMemoria + ", MARCOS USADOS: " + memoria)
+    //----------------------------
+
+}
+
+function recorrerMemoria(){
+
+    let actual = false, listo = false, bloqueado = false;
+    let limiteMarco = 0;
+    let contadorMarco = 1;
+    let procesoAnalizado;
+
+    for (let i = 1; i <= 40; i++) {  //mandarlo al inicio de la funcio
+        
+        let elementos = document.getElementsByClassName("cuadro pag-" + i);
+
+        // Si el proceso en la casilla actual es el que esta corriendo
+        if(procesosEnMemoria[i-1]==aux_process.id && !actual){
+            limiteMarco = Math.ceil(aux_process.tamano/5);
+            actual = true;
+        }
+        else if(!actual && !bloqueado){
+            for(let i = 0; i < blockedBatch.length; i++){
+                console.log(procesosEnMemoria[i-1],blockedBatch[i].id)
+                if(procesosEnMemoria[i-1]==blockedBatch[i].id){
+                    procesoAnalizado = blockedBatch[i];
+                    limiteMarco = Math.ceil(blockedBatch[i].tamano/5);
+                    bloqueado = true;
+                    break;
+                }
+            }
+        }
+        else if(!actual && !bloqueado && !listo){
+            console.log()
+            for(let i = 0; i < processCopy.length; i++){
+                if(procesosEnMemoria[i-1]==processCopy[i].id){
+                    procesoAnalizado = processCopy[i];
+                    limiteMarco = Math.ceil(processCopy[i].tamano/5);
+                    listo = true;
+                    break;
+                }
+            }
+        }
+
+        if(actual){
+            console.log("ACTUAL");
+            elementos[0].style.background = "";
+            elementos[0].style.backgroundColor = "";
+    
+            if(!Number.isInteger(aux_process.tamano/5) && contadorMarco==limiteMarco){
+                console.log("MOCHO")
+                porcentajeCuadro = Math.round((1-((Math.ceil(aux_process.tamano/5))-(aux_process.tamano/5))) * 100);
+                contadorMarco++;
+                if(porcentajeCuadro>40){
+                    elementos[0].style.background = "linear-gradient(to right, red " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                }else{
+                    elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, red " + porcentajeCuadro + "%)";
+                }
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                contadorMarco = 1;
+                actual = false;
+                //elementos[0].className += " decimal";
+            }else{
+                contadorMarco++;
+                if(contadorMarco==limiteMarco){
+                    contadorMarco=1;
+                    actual = false;
+                    console.log("ACTUAL FALSE")
+                } 
+                elementos[0].style.backgroundColor = "red";
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + limitePag + ":" + 5 +'</div>';
+            }
+        }
+        else if(bloqueado){
+            console.log("BLOQUEADO");
+            elementos[0].style.background = "";
+            elementos[0].style.backgroundColor = "";
+    
+            if(!Number.isInteger(procesoAnalizado.tamano/5) && contadorMarco==limiteMarco){
+                
+                porcentajeCuadro = Math.round((1-((Math.ceil(procesoAnalizado.tamano/5))-(procesoAnalizado.tamano/5))) * 100);
+                if(porcentajeCuadro>40){
+                    elementos[0].style.background = "linear-gradient(to right, #4B0082 " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                }else{
+                    elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, #4B0082 " + porcentajeCuadro + "%)";
+                }
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                contadorMarco = 1;
+                bloqueado = false;
+                //elementos[0].className += " decimal";
+            }else{
+                
+                if(contadorMarco==limiteMarco){
+                    contadorMarco=1;
+                    bloqueado = false;
+                }
+                elementos[0].style.backgroundColor = "#4B0082";
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + limitePag + ":" + 5 +'</div>';
+            }
+            contadorMarco++;
+        }
+        else if(listo){
+            console.log("LISTO");
+            elementos[0].style.background = "";
+            elementos[0].style.backgroundColor = "";
+    
+            if(!Number.isInteger(procesoAnalizado.tamano/5) && contadorMarco==limiteMarco){
+                porcentajeCuadro = Math.round((1-((Math.ceil(procesoAnalizado.tamano/5))-(procesoAnalizado.tamano/5))) * 100);
+                if(porcentajeCuadro>40){
+                    elementos[0].style.background = "linear-gradient(to right, blue " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
+                }else{
+                    elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, blue " + porcentajeCuadro + "%)";
+                }
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                contadorMarco = 1;
+                listo = false;
+                //elementos[0].className += " decimal";
+            }else{
+                if(contadorMarco==limiteMarco){
+                    contadorMarco=1;
+                    listo = false;
+                } 
+                elementos[0].style.backgroundColor = "blue";
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + limitePag + ":" + 5 +'</div>';
+            }
+            contadorMarco++;
+        }
+        console.log("ACTUALIZADO")
+        //elementos[0].style.backgroundColor = "#080303";
+        //elementos[0].style.background = "";
+        //elementos[0].innerHTML = i+":"+0;
+    }
+    
+}
+
 async function batchProcessing(lotes){
 
     let currentProcess = 0; //inicializacion de procesos
@@ -350,7 +607,14 @@ async function batchProcessing(lotes){
         //actualiza procesos listos
         document.getElementById('current-batch').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>";
 
-        actualizarMemoria();
+        //actualizarMemoria();
+
+        //Meter por primera vez los procesos a la memoria
+        if(currentProcess==0 && globalTime==0){
+            meterProcesos();   
+        }
+
+        recorrerMemoria();
 
         limit = processCopy.length > procesosMemoria ? procesosMemoria-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=procesosMemoria ? processCopy.length : procesosMemoria-1-blockedBatch.length;
 
@@ -401,7 +665,7 @@ function Tiempos() {
         tiempo_restante--;
         globalTime++;
 
-        actualizarMemoria();
+        //actualizarMemoria();
 
         //sinProceso = false;
 
@@ -473,6 +737,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 auxprocess.tt = tiempo_transcurrido;
                 processCopy.splice(limit, 0, auxprocess);
 
+                recorrerMemoria()
                 document.removeEventListener('keydown', keyHandler);
                 clearInterval(intervalId);
                 clearTimeout(timeoutId);
@@ -529,7 +794,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
             //if ((event.key === 'i' || event.key === 'I') && !isPaused && blockedBatch.length<procesosMemoria-1 && !bloqueoI) { // y tiempo_restante es mayor o igual al tiempo del ultimo quantum
             if ((event.key === 'i' || event.key === 'I') && !isPaused) {
                 document.removeEventListener('keydown', keyHandler);
-                limpiarMemoria();
+                //limpiarMemoria();
                 auxprocess.contadorInterrupciones++;
                 auxprocess.tt = tiempo_transcurrido;
                 auxprocess.tb = 8;

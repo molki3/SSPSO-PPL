@@ -138,15 +138,3 @@ th, td {
     width: 20%;
     height: 100%;
 }
-
-.decimal{
-    background: linear-gradient(to left, black 50%, red 50%);
-}
-
-.decimal_blocked{
-    background: linear-gradient(to left, black 50%, #4B0082 50%);
-}
-
-.decimal_processes{
-    background: linear-gradient(to left, black 50%, blue 50%);
-}
