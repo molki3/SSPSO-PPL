@@ -276,6 +276,7 @@ function actualizarMemoria(){
     //----------------------------
 }
 
+
 function limpiarMemoria(){
     //LIEMPIEZA DE CUADRICULA-----------------------------------------
     for (let i = 1; i <= 40; i++) { //mandarlo al inicio de la funcio
@@ -292,7 +293,8 @@ function limpiarMemoria(){
     //-----------------------------------------------------------------
 }
 
-function meterProcesos(){
+
+function iniciarProcesos(){
 
     // PAGINACION SIMPLE - ASIGNACION Y ACUMULACION DE MARCOS DE MEMORIA--------------------------
     memoria = 0; //cuantos marcos estan ocupados
@@ -413,81 +415,95 @@ function meterProcesos(){
         }
     }
 
+    //rellena vacios con "v"
+    if(limitePag-1 < 40){
+        for(limitePag; limitePag<=40; limitePag++){
+            procesosEnMemoria[limitePag-1] = "v";
+        }
+    }
+
     //console.log("PROCESOS EN MEMORIA: " + procesosMemoria + ", MARCOS USADOS: " + memoria)
     //----------------------------
-
 }
+
 
 function recorrerMemoria(){
 
-    let actual = false, listo = false, bloqueado = false;
+    let actual = false, listo = false, bloqueado = false, terminado = false;
     let limiteMarco = 0;
     let contadorMarco = 1;
     let procesoAnalizado;
 
-    for (let i = 1; i <= 40; i++) {  //mandarlo al inicio de la funcio
+    //console.log(procesosEnMemoria)
+
+    for (let i = 1; i <= 40; i++) { 
         
         let elementos = document.getElementsByClassName("cuadro pag-" + i);
 
+        //console.log("VUELTA ",i,"PROCESO:",procesosEnMemoria[i-1])
+
+        if(endedProcesses.includes(procesosEnMemoria[i-1]) && !actual && !listo && !bloqueado) terminado = true;
         // Si el proceso en la casilla actual es el que esta corriendo
-        if(procesosEnMemoria[i-1]==aux_process.id && !actual){
+        if(procesosEnMemoria[i-1]==aux_process.id && !actual && !terminado){
             limiteMarco = Math.ceil(aux_process.tamano/5);
             actual = true;
+            contadorMarco = 1;
         }
-        else if(!actual && !bloqueado){
-            for(let i = 0; i < blockedBatch.length; i++){
-                console.log(procesosEnMemoria[i-1],blockedBatch[i].id)
-                if(procesosEnMemoria[i-1]==blockedBatch[i].id){
-                    procesoAnalizado = blockedBatch[i];
-                    limiteMarco = Math.ceil(blockedBatch[i].tamano/5);
+        if(!actual && !bloqueado && !terminado){
+            for(let j = 0; j < blockedBatch.length; j++){
+                if(procesosEnMemoria[i-1]==blockedBatch[j].id){
+                    contadorMarco = 1;
+                    procesoAnalizado = blockedBatch[j];
+                    limiteMarco = Math.ceil(blockedBatch[j].tamano/5);
                     bloqueado = true;
                     break;
                 }
             }
         }
-        else if(!actual && !bloqueado && !listo){
-            console.log()
-            for(let i = 0; i < processCopy.length; i++){
-                if(procesosEnMemoria[i-1]==processCopy[i].id){
-                    procesoAnalizado = processCopy[i];
-                    limiteMarco = Math.ceil(processCopy[i].tamano/5);
+        if(!actual && !bloqueado && !listo && !terminado){
+            for(let j = 0; j < processCopy.length; j++){
+                if(procesosEnMemoria[i-1]==processCopy[j].id){
+                    contadorMarco = 1;
+                    procesoAnalizado = processCopy[j];
+                    limiteMarco = Math.ceil(processCopy[j].tamano/5);
                     listo = true;
                     break;
                 }
             }
         }
+        
+        if(terminado){
+            elementos[0].style.background="";
+            elementos[0].style.backgroundColor = "";
+            elementos[0].innerHTML = i+":0";
+            procesosEnMemoria[i-1]="v";
+            terminado = false;
+        }
 
         if(actual){
-            console.log("ACTUAL");
             elementos[0].style.background = "";
             elementos[0].style.backgroundColor = "";
     
             if(!Number.isInteger(aux_process.tamano/5) && contadorMarco==limiteMarco){
-                console.log("MOCHO")
                 porcentajeCuadro = Math.round((1-((Math.ceil(aux_process.tamano/5))-(aux_process.tamano/5))) * 100);
-                contadorMarco++;
                 if(porcentajeCuadro>40){
                     elementos[0].style.background = "linear-gradient(to right, red " + (porcentajeCuadro) + "%, black " + (100 - porcentajeCuadro) + "%)";
                 }else{
                     elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, red " + porcentajeCuadro + "%)";
                 }
-                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
-                contadorMarco = 1;
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + i + ":" + porcentajeCuadro/20 +'</div>';
                 actual = false;
-                //elementos[0].className += " decimal";
             }else{
-                contadorMarco++;
                 if(contadorMarco==limiteMarco){
-                    contadorMarco=1;
                     actual = false;
-                    console.log("ACTUAL FALSE")
                 } 
                 elementos[0].style.backgroundColor = "red";
-                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + limitePag + ":" + 5 +'</div>';
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+aux_process.id + "\n" + i + ":" + 5 +'</div>';
             }
+            contadorMarco++;
         }
+
         else if(bloqueado){
-            console.log("BLOQUEADO");
             elementos[0].style.background = "";
             elementos[0].style.backgroundColor = "";
     
@@ -499,10 +515,9 @@ function recorrerMemoria(){
                 }else{
                     elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, #4B0082 " + porcentajeCuadro + "%)";
                 }
-                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + i + ":" + porcentajeCuadro/20 +'</div>';
                 contadorMarco = 1;
                 bloqueado = false;
-                //elementos[0].className += " decimal";
             }else{
                 
                 if(contadorMarco==limiteMarco){
@@ -510,12 +525,12 @@ function recorrerMemoria(){
                     bloqueado = false;
                 }
                 elementos[0].style.backgroundColor = "#4B0082";
-                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + limitePag + ":" + 5 +'</div>';
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + i + ":" + 5 +'</div>';
             }
             contadorMarco++;
         }
+
         else if(listo){
-            console.log("LISTO");
             elementos[0].style.background = "";
             elementos[0].style.backgroundColor = "";
     
@@ -526,7 +541,7 @@ function recorrerMemoria(){
                 }else{
                     elementos[0].style.background = "linear-gradient(to left, black " + (100 - porcentajeCuadro) + "%, blue " + porcentajeCuadro + "%)";
                 }
-                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + limitePag + ":" + porcentajeCuadro/20 +'</div>';
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + i + ":" + porcentajeCuadro/20 +'</div>';
                 contadorMarco = 1;
                 listo = false;
                 //elementos[0].className += " decimal";
@@ -536,17 +551,64 @@ function recorrerMemoria(){
                     listo = false;
                 } 
                 elementos[0].style.backgroundColor = "blue";
-                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + limitePag + ":" + 5 +'</div>';
+                elementos[0].innerHTML = '<div class="divisiones"><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div><div class="division"></div></div> <div class="cuadro-contenido">'+procesoAnalizado.id + "\n" + i + ":" + 5 +'</div>';
             }
             contadorMarco++;
         }
-        console.log("ACTUALIZADO")
-        //elementos[0].style.backgroundColor = "#080303";
-        //elementos[0].style.background = "";
-        //elementos[0].innerHTML = i+":"+0;
     }
     
 }
+
+
+function meterProcesos(){
+    let rangoVacios = 0;
+    let inicio = 0, fin = 0;
+    let memoriaEncontrada = false;
+    
+    if(processCopy.length>=limit){
+        for(let i = limit; i < processCopy.length; i++){
+
+            recorrerMemoria();
+            console.log(procesosEnMemoria);
+            console.log(processCopy[i]);
+            
+            let memoriaNecesitada = Math.ceil(processCopy[i].tamano/5); 
+            rangoVacios = 0, inicio = 0, fin = 0;
+
+            console.log(memoriaNecesitada);
+            
+            for (let j = 1; j <= 40; j++) {
+
+                if(procesosEnMemoria[j-1]=="v"){
+                    console.log("vacio en", j);
+                    if(rangoVacios==0) inicio = j;
+                    if(rangoVacios==memoriaNecesitada){
+                        fin = j;
+                        console.log("memoria lista de",inicio,fin)
+                        memoriaEncontrada = true;
+                        break;
+                    }
+                    rangoVacios++;
+                }
+                else{
+                    rangoVacios=0;
+                }
+
+            }
+
+            if(memoriaEncontrada){
+                for(let j = inicio; j <= fin; j++){
+                    procesosEnMemoria[j-1] = processCopy[i].id;
+                }
+                procesosMemoria++;
+                limit = processCopy.length > procesosMemoria ? procesosMemoria-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=procesosMemoria ? processCopy.length : procesosMemoria-1-blockedBatch.length;
+            }
+            else break;
+        }
+    }
+    recorrerMemoria();
+}
+
 
 async function batchProcessing(lotes){
 
@@ -611,13 +673,13 @@ async function batchProcessing(lotes){
 
         //Meter por primera vez los procesos a la memoria
         if(currentProcess==0 && globalTime==0){
-            meterProcesos();   
+            iniciarProcesos();   
         }
-
-        recorrerMemoria();
 
         limit = processCopy.length > procesosMemoria ? procesosMemoria-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=procesosMemoria ? processCopy.length : procesosMemoria-1-blockedBatch.length;
 
+        //console.log(limit)
+        
         for (let j = 0; j < limit; j++) {
             // TIEMPO DE LLEGADA
             if(processCopy[j].tl == -1){
@@ -631,6 +693,8 @@ async function batchProcessing(lotes){
         for (let j = limit; j < processCopy.length; j++) {
             document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
         }
+
+        recorrerMemoria();
         
         // funcion de espera de tecla cada que entra un proceso a ejecutarse
         await delayWithKeyPress(tiempo_restante * 1000, currentProcess, aux_process).then(newCurrentProcess => {
@@ -729,15 +793,14 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
 
         //IMPLEMENTACION DEL QUANTUM
         intervalId = setInterval(() => {
-            console.log("verificando QUANTUM", tiempo_quantum)
+            //console.log("verificando QUANTUM", tiempo_quantum)
             //if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme && !isPaused && !sinProceso) {
             if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme && !isPaused) {
-                console.log("Regresa desde QUANTUM");
+                //console.log("Regresa desde QUANTUM");
                 tiempo_quantum = 0;
                 auxprocess.tt = tiempo_transcurrido;
                 processCopy.splice(limit, 0, auxprocess);
 
-                recorrerMemoria()
                 document.removeEventListener('keydown', keyHandler);
                 clearInterval(intervalId);
                 clearTimeout(timeoutId);
@@ -759,6 +822,8 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.tamano + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
                     endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                     endedComplete.push(auxprocess);
+                    procesosMemoria--;
+                    meterProcesos();
                     currentProcess++;
                 }
             }
@@ -788,6 +853,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 tiempo_quantum = 0;
                 keyPressed = true;
                 currentProcess++;//avanza al siguiente proceso
+                procesosMemoria--;
                 resolve(currentProcess);
             }
 
