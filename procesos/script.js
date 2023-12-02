@@ -580,15 +580,15 @@ function meterProcesos(){
             for (let j = 1; j <= 40; j++) {
 
                 if(procesosEnMemoria[j-1]=="v"){
-                    console.log("vacio en", j);
                     if(rangoVacios==0) inicio = j;
+                    console.log("vacio en", j);
+                    rangoVacios++;
                     if(rangoVacios==memoriaNecesitada){
                         fin = j;
                         console.log("memoria lista de",inicio,fin)
                         memoriaEncontrada = true;
                         break;
                     }
-                    rangoVacios++;
                 }
                 else{
                     rangoVacios=0;
@@ -600,6 +600,7 @@ function meterProcesos(){
                 for(let j = inicio; j <= fin; j++){
                     procesosEnMemoria[j-1] = processCopy[i].id;
                 }
+                memoriaEncontrada = false;
                 procesosMemoria++;
                 limit = processCopy.length > procesosMemoria ? procesosMemoria-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=procesosMemoria ? processCopy.length : procesosMemoria-1-blockedBatch.length;
             }
@@ -639,6 +640,7 @@ async function batchProcessing(lotes){
             //CUANDO NO QUEDE NINGUN PROCESOS POR JECCutAR PERO SI EN BLOQUEADOS
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>";    //limpia proceso
             hideProcess = true;
+            console.log("ESPERANDO PROCESO (S)");
             await delay((blockedBatch[0].tb+1)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
             aux_process = processCopy[0];
             hideProcess = false;
@@ -678,7 +680,6 @@ async function batchProcessing(lotes){
 
         limit = processCopy.length > procesosMemoria ? procesosMemoria-1-blockedBatch.length : processCopy.length+1+blockedBatch.length <=procesosMemoria ? processCopy.length : procesosMemoria-1-blockedBatch.length;
 
-        //console.log(limit)
         
         for (let j = 0; j < limit; j++) {
             // TIEMPO DE LLEGADA
@@ -793,11 +794,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
 
         //IMPLEMENTACION DEL QUANTUM
         intervalId = setInterval(() => {
-            //console.log("verificando QUANTUM", tiempo_quantum)
-            //if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme && !isPaused && !sinProceso) {
             if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme && !isPaused) {
-                //console.log("Regresa desde QUANTUM");
-                tiempo_quantum = 0;
                 auxprocess.tt = tiempo_transcurrido;
                 processCopy.splice(limit, 0, auxprocess);
 
@@ -852,8 +849,9 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 }
                 tiempo_quantum = 0;
                 keyPressed = true;
-                currentProcess++;//avanza al siguiente proceso
                 procesosMemoria--;
+                meterProcesos();
+                currentProcess++;//avanza al siguiente proceso
                 resolve(currentProcess);
             }
 
@@ -866,8 +864,8 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 auxprocess.tb = 8;
                 blockedBatch.push(auxprocess);
 
-                console.log("interrumpidos")
-                console.log(blockedBatch);
+                //console.log("interrumpidos")
+                //console.log(blockedBatch);
 
                 tiempo_quantum = 0;
                 keyPressed = true;
@@ -899,14 +897,6 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 console.log(errorProcesses);
             }
 
-            if (event.key === 't' && !isPaused) {
-                clearTimeout(timeoutId); // Pausar el temporizador
-                isPaused = true;
-                keyPressed = true;
-                mostrarVentanaEmergente2();
-                console.log('El programa está pausado. Presione "c" para continuar. Proceso : ' + auxprocess.id);
-            }
-
             if (event.key === 'c' && isPaused) {
                 
                 if(bcpKey){
@@ -928,6 +918,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
             if (event.key === 'n' || event.key === 'N') {
                 procesos = parseInt(procesos)+1;
                 generarProcesos(procesos);
+                meterProcesos();
             }
         }
         
@@ -952,7 +943,7 @@ function updateBlockedProcesses() {
             // Si el tiempo de bloqueo llega a 0, quita el proceso de la lista de bloqueados
             blockedBatch.splice(i, 1);
                 processCopy.splice(limit, 0, aux);
-                //index_back++;   
+                recorrerMemoria();
         }
     }
 }
