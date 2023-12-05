@@ -70,6 +70,10 @@ let bcpKey = false;
 // Procesos bloqueados
 let blockedBatch = [];
 
+// Procesos suspendidos
+let suspendedProcesses = [];
+let suspendedID = [];
+
 let totalBatch = 0;
 let currentBatch = 0;
 let remainingBatch = totalBatch - currentBatch;
@@ -294,12 +298,12 @@ function iniciarProcesos(){
 
 function recorrerMemoria(){
 
-    let actual = false, listo = false, bloqueado = false, terminado = false;
+    let actual = false, listo = false, bloqueado = false, terminado = false, suspendido = false;
     let limiteMarco = 0;
     let contadorMarco = 1;
     let procesoAnalizado;
 
-    //console.log(procesosEnMemoria)
+    console.log(aux_process)
 
     for (let i = 1; i <= 40; i++) { 
         
@@ -307,14 +311,16 @@ function recorrerMemoria(){
 
         //console.log("VUELTA ",i,"PROCESO:",procesosEnMemoria[i-1])
 
+
         if(endedProcesses.includes(procesosEnMemoria[i-1]) && !actual && !listo && !bloqueado) terminado = true;
+        if(!terminado && !actual && !listo && !bloqueado && suspendedID.includes(procesosEnMemoria[i-1])) suspendido = true;
         // Si el proceso en la casilla actual es el que esta corriendo
-        if(procesosEnMemoria[i-1]==aux_process.id && !actual && !terminado){
+        if(aux_process && procesosEnMemoria[i-1]==aux_process.id && !actual && !terminado && !suspendido){
             limiteMarco = Math.ceil(aux_process.tamano/5);
             actual = true;
             contadorMarco = 1;
         }
-        if(!actual && !bloqueado && !terminado){
+        if(!actual && !bloqueado && !terminado && !suspendido){
             for(let j = 0; j < blockedBatch.length; j++){
                 if(procesosEnMemoria[i-1]==blockedBatch[j].id){
                     contadorMarco = 1;
@@ -325,7 +331,7 @@ function recorrerMemoria(){
                 }
             }
         }
-        if(!actual && !bloqueado && !listo && !terminado){
+        if(!actual && !bloqueado && !listo && !terminado && !suspendido){
             for(let j = 0; j < processCopy.length; j++){
                 if(procesosEnMemoria[i-1]==processCopy[j].id){
                     contadorMarco = 1;
@@ -337,12 +343,21 @@ function recorrerMemoria(){
             }
         }
         
+
         if(terminado){
             elementos[0].style.background="";
             elementos[0].style.backgroundColor = "";
             elementos[0].innerHTML = i+":0";
             procesosEnMemoria[i-1]="v";
             terminado = false;
+        }
+
+        if(suspendido){
+            elementos[0].style.background="";
+            elementos[0].style.backgroundColor = "";
+            elementos[0].innerHTML = i+":0";
+            procesosEnMemoria[i-1]="v";
+            suspendido = false;
         }
 
         if(actual){
@@ -476,6 +491,37 @@ function meterProcesos(){
 }
 
 
+function calcularMemoriaDisponible(tamano){
+    let rangoVacios = 0;
+    let inicio = 0, fin = 0;
+
+    recorrerMemoria();
+    
+    let memoriaNecesitada = Math.ceil(tamano/5); 
+    rangoVacios = 0, inicio = 0, fin = 0;
+
+    console.log(memoriaNecesitada);
+    
+    for (let j = 1; j <= 40; j++) {
+
+        if(procesosEnMemoria[j-1]=="v"){
+            if(rangoVacios==0) inicio = j;
+            console.log("vacio en", j);
+            rangoVacios++;
+            if(rangoVacios==memoriaNecesitada){
+                fin = j;
+                console.log("memoria lista de",inicio,fin)
+                return true;
+            }
+        }
+        else{
+            rangoVacios=0;
+        }
+
+    }
+    return false;
+}
+
 async function batchProcessing(lotes){
 
     let currentProcess = 0; //inicializacion de procesos
@@ -493,28 +539,27 @@ async function batchProcessing(lotes){
 
         //termina contador local
         clearInterval(intervalT);
-
-        //inicia tiempo de procesos bloqueados, se relaciona con metodos en Tiempos()
-        intervalB = setInterval(updateBlockedProcesses, 1000);
         
         //reinicia tt y tr, continua globalTimer
         intervalT = setInterval(Tiempos, 1000);
+        
+        //inicia tiempo de procesos bloqueados, se relaciona con metodos en Tiempos()
+        intervalB = setInterval(updateBlockedProcesses, 1000);
 
         // auxiliar del proceso actual
         if(processCopy.length==0 && blockedBatch.length>0){
             //CUANDO NO QUEDE NINGUN PROCESOS POR JECCutAR PERO SI EN BLOQUEADOS
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th></tr>";    //limpia proceso
-            hideProcess = true;
-            console.log("ESPERANDO PROCESO (S)");
-            await delay((blockedBatch[0].tb+1)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
+            //hideProcess = true;
+            console.log("CASI FIN")
+            recorrerMemoria();
+            await delay((blockedBatch[0].tb)*1000); //se espera un tiempo de 8+1 segundos cuando no haya procesos corriendo pero si hay procesos en bloqueados (se suma un minuto para que espere a regresar los 8 segundos e inserte proceso en processCopy en updateBlockedProcesses())
             aux_process = processCopy[0];
-            hideProcess = false;
+            //hideProcess = false;
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td>" + aux_process.tamano + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td><td id='tiempoq'></td> </tr>";
-        }
-        else{
+        }else{
             aux_process = processCopy[0];
         }
-
         
         //actualiza proceso actual
         if(aux_process){
@@ -556,8 +601,10 @@ async function batchProcessing(lotes){
 
         //actualiza procesos nuevos
         document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>"
-        for (let j = limit; j < processCopy.length; j++) {
-            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+        if(processCopy.length>0){
+            for (let j = limit; j < processCopy.length; j++) {
+                document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+            }
         }
 
         recorrerMemoria();
@@ -566,6 +613,22 @@ async function batchProcessing(lotes){
         await delayWithKeyPress(tiempo_restante * 1000, currentProcess, aux_process).then(newCurrentProcess => {
             currentProcess = newCurrentProcess; // Actualizar currentProcess
         });
+
+        /*if(currentProcess==procesos && suspendedProcesses.length>0){
+            console.log("yeayea");
+
+            //limpia proceso actual
+            document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th><th>QT</th></tr>";
+           
+            procesosMemoria=0;
+            procesos=0;
+
+            await delayWithRPress(60 * 1000, currentProcess).then(newCurrentProcess => {
+                currentProcess = newCurrentProcess; // Actualizar currentProcess
+            });
+
+            console.log(limit);
+        }*/
 
     }
 
@@ -589,24 +652,31 @@ async function batchProcessing(lotes){
 
 function Tiempos() {
     if (!isPaused) {
-        tiempo_quantum++;
-        tiempo_transcurrido++;
-        tiempo_restante--;
         globalTime++;
 
         //intenta calcular tt y tr si es que hay o no procesos ejecutandose---------------------
-        try {
+        if(aux_process){
+            tiempo_quantum++;
+            tiempo_transcurrido++;
+            tiempo_restante--;
             document.getElementById('tiempot').textContent = `${tiempo_transcurrido}`;
             document.getElementById('tiempor').textContent = `${tiempo_restante}`;  
             document.getElementById('tiempoq').textContent = `${tiempo_quantum}`; //quantum en pantalla  
-        } catch (error) {
-            console.log("Esperando proceso...")
+        }else{
+            console.log("Esperando proceso...")   
         }
+            
         //--------------------------------------------------------------------------------------
 
-        aux_process.ts = tiempo_transcurrido;
+        if(aux_process) aux_process.ts = tiempo_transcurrido;
         
         globalTimer.textContent = `Tiempo transcurrido: ${globalTime} segundos`; //contador global en pantalla
+
+        //actualiza procesos suspendidos
+        document.getElementById('suspended-process').innerHTML = "<tr><th>ID</th><th>SIZE</th></tr>";
+        for (let j = 0; j < suspendedProcesses.length; j++) {
+            document.getElementById('suspended-process').innerHTML += "<tr> <td> " + suspendedProcesses[j].id + " </td> <td> " + suspendedProcesses[j].tamano + " </td></tr>";
+        }
 
         //actualiza los procesos bloqueados
         document.getElementById('blocked-process').innerHTML = "<tr><th>ID</th><th>TT</th></tr>";
@@ -628,9 +698,11 @@ function Tiempos() {
         }
 
         //actualiza procesos nuevos
-        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>"
-        for (let j = limit; j < processCopy.length; j++) {
-            document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+        document.getElementById('new-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>TT</th></tr>";
+        if(processCopy.length>0){
+            for (let j = limit; j < processCopy.length; j++) {
+                document.getElementById('new-process').innerHTML += "<tr> <td> " + processCopy[j].id + " </td> <td> " + processCopy[j].tamano + " </td> <td> " + processCopy[j].tme + " </td> <td> " + processCopy[j].tt + " </td> </tr>";
+            }
         }
     }
 }
@@ -647,6 +719,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
         //IMPLEMENTACION DEL QUANTUM
         intervalId = setInterval(() => {
             if (tiempo_quantum == quantum && tiempo_transcurrido<auxprocess.tme && !isPaused) {
+                console.log("mete uno")
                 auxprocess.tt = tiempo_transcurrido;
                 processCopy.splice(limit, 0, auxprocess);
 
@@ -655,14 +728,36 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 clearTimeout(timeoutId);
                 resolve(currentProcess);
             }
+            if (!keyPressed) {
+                // Verifica si el proceso ya está en la lista de procesos finalizados
+                if (!endedProcesses.includes(auxprocess.id) && tiempo_transcurrido==auxprocess.tme && !isPaused) {    
+                    console.log("termina") 
+                    auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
+                    auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
+                    auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
+                    auxprocess.te = auxprocess.tf - auxprocess.tl - auxprocess.ts; //TIEMPO DE ESPERA
+                    tiempo_quantum = 0;
+                    document.getElementById('ended-process').innerHTML += "<tr> <td> " + auxprocess.id + " </td> <td> " + auxprocess.tamano + " </td> <td> " + auxprocess.operacion + " </td> <td> " + Number(eval(auxprocess.operacion).toFixed(4)) + " </td> <td> " + auxprocess.tl + " </td> <td> " + auxprocess.tf + " </td> <td> " + auxprocess.tr + " </td> <td> " + auxprocess.tres + " </td>  <td> " + auxprocess.te + " </td>  <td> " + auxprocess.ts + " </td>  </tr>";  
+                    endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
+                    endedComplete.push(auxprocess);
+                    procesosMemoria--;
+                    meterProcesos();
+                    currentProcess++;
+                    aux_process = null;
+                    document.removeEventListener('keydown', keyHandler);
+                    resolve(currentProcess);
+                }
+                
+            }
             if(!evento){console.log("mata quantum");clearInterval(intervalId);resolve(currentProcess);}
         }, 1000); // Verifica cada segundo si tiempo_transcurrido es igual a 6
 
         timeoutId = setTimeout(() => {
             document.addEventListener('keydown', keyHandler);
-            if (!keyPressed) {
+            /*if (!keyPressed) {
                 // Verifica si el proceso ya está en la lista de procesos finalizados
-                if (!endedProcesses.includes(auxprocess.id) && tiempo_transcurrido==auxprocess.tme && !isPaused) {        
+                if (!endedProcesses.includes(auxprocess.id) && tiempo_transcurrido==auxprocess.tme && !isPaused) {    
+                    console.log("termina") 
                     auxprocess.tf = globalTime; //TIEMPO DE FINALIZACION
                     auxprocess.tr = auxprocess.tf - auxprocess.tl; //TIEMPO DE RETORNO
                     auxprocess.ts = tiempo_transcurrido; //TIEMPO DE SERVICIO
@@ -675,11 +770,9 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     meterProcesos();
                     currentProcess++;
                 }
-            }
-
+            }*/
             document.removeEventListener('keydown', keyHandler);
             resolve(currentProcess);
-            
         }, ms);
 
 
@@ -701,6 +794,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 tiempo_quantum = 0;
                 keyPressed = true;
                 procesosMemoria--;
+                aux_process = null;
                 meterProcesos();
                 currentProcess++;//avanza al siguiente proceso
                 resolve(currentProcess);
@@ -714,22 +808,32 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 auxprocess.tb = 8;
                 blockedBatch.push(auxprocess);
 
+                aux_process = null;
+
+                console.log("INTERRUMPE")
+
                 tiempo_quantum = 0;
                 keyPressed = true;
+
                 resolve(currentProcess);
             }
 
             if (event.key === 'p' && !isPaused) {
-                clearTimeout(timeoutId); // Pausar el temporizador
                 isPaused = true;
+
+                clearTimeout(timeoutId); // Pausar el temporizador
+
                 keyPressed = true;
                 console.log('El programa está pausado. Presione "c" para continuar. Proceso : ' + auxprocess.id);      
             }
 
             if (event.key === 'b' && !isPaused) {
-                clearTimeout(timeoutId); // Pausar el temporizador
                 isPaused = true;
+
+                clearTimeout(timeoutId); // Pausar el temporizador
+                
                 keyPressed = true;
+
                 mostrarVentanaEmergente(auxprocess);
                 console.log('El programa está pausado. Presione "c" para continuar. Proceso : ' + auxprocess.id);
                 console.log("Proceso actual: ");
@@ -745,7 +849,11 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
             }
 
             if (event.key === 'c' && isPaused) {
-                
+
+                document.removeEventListener('keydown', keyHandler);
+
+                isPaused = false; // Reanudar el temporizador
+
                 if(bcpKey){
                     cerrarVentanaEmergente();
                     bcpKey = false;
@@ -753,22 +861,57 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
 
                 // Reanudar el temporizador con el tiempo restante
                 keyPressed = false;
-                isPaused = false; // Reanudar el temporizador
                 console.log('El programa continuará.');
             }
 
-            if (event.key === 'n' || event.key === 'N') {
+            if (event.key === 'n' || event.key === 'N' && !isPaused) {
                 procesos = parseInt(procesos)+1;
                 generarProcesos(procesos);
                 meterProcesos();
             }
 
-            if (event.key === 's' || event.key === 'S') {
-                console.log("Suspendido")
+            if ((event.key === 's' || event.key === 'S') && !isPaused && blockedBatch.length>0) {
+
+                console.log("Suspendido");
+
+                blockedBatch[0].tb = 0;
+                let suspendedProcess = blockedBatch[0];
+
+                suspendedProcesses.push(suspendedProcess);
+                suspendedID.push(suspendedProcess.id);
+                blockedBatch.splice(0, 1);
+
+                //tiempo_quantum = 0;
+                keyPressed = true;
+
+                procesosMemoria--;
+                meterProcesos();
+
+                currentProcess++;//avanza al siguiente proceso
+            }
+            if ((event.key === 'R' || event.key === 'r') && !isPaused && suspendedProcesses.length>0 && calcularMemoriaDisponible(suspendedProcesses[0].tamano)) {
+                console.log("Regresa Suspendido")
+
+                //document.removeEventListener('keydown', keyHandler);
+
+                processCopy.splice(limit, 0, suspendedProcesses[0]);
+                console.log(processCopy)
+                
+
+                suspendedProcesses.splice(0, 1);
+                suspendedID.splice(0,1);
+                
+                console.log(suspendedProcesses);
+
+                meterProcesos();
+
+                currentProcess--;
             }
 
-            if (event.key === 'R' || event.key === 'r') {
-                console.log("Regresa Suspendido")
+            if (event.key == 'Escape' && !isPaused) {
+                procesos=1;
+                currentProcess=1;
+                resolve(currentProcess);
             }
         }
         
@@ -777,8 +920,47 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
     });
 }
 
+function delayWithRPress(ms, currentProcess) {
+    return new Promise((resolve, reject) => {
+
+        timeoutId = setTimeout(() => {
+            document.addEventListener('keydown', keyHandler2);
+            document.removeEventListener('keydown', keyHandler2);
+            resolve(currentProcess);
+        }, ms);
+
+
+        function keyHandler2(event) {
+
+            if (event.key === 'R' || event.key === 'r' && !isPaused) {
+                console.log("Regresa Suspendido")
+                document.removeEventListener('keydown', keyHandler2);
+                clearTimeout(timeoutId);
+                tiempo_quantum = 0;
+                processCopy.splice(limit, 0, suspendedProcesses[0]);
+                suspendedProcesses.splice(0, 1);
+                suspendedID.splice(0,1);
+                procesos++;
+                currentProcess=0;
+                resolve(currentProcess);
+            }
+
+            if (event.key == 'Escape' && !isPaused) {
+                procesos=1;
+                currentProcess=1;
+                resolve(currentProcess);
+            }
+        }
+        
+        document.addEventListener('keydown', keyHandler2);
+        
+    });
+}
+
 function updateBlockedProcesses() {
     const blockedTable = document.getElementById('blocked-process'); // Obtén la tabla de procesos bloqueados
+
+    console.log()
 
     for (let i = blockedBatch.length - 1; i >= 0; i--) {
         const aux = blockedBatch[i];
@@ -792,8 +974,9 @@ function updateBlockedProcesses() {
         }else {
             // Si el tiempo de bloqueo llega a 0, quita el proceso de la lista de bloqueados
             blockedBatch.splice(i, 1);
-                processCopy.splice(limit, 0, aux);
-                recorrerMemoria();
+            processCopy.splice(limit, 0, aux);
+            console.log("mete dos")
+            recorrerMemoria();
         }
     }
 }
@@ -888,6 +1071,10 @@ function mostrarVentanaEmergente(auxprocess) {
                 }
                 
             }
+        }
+
+        else if(suspendedProcesses.includes(molki)){
+            document.getElementById('bcp-table').innerHTML += "<tr> <td>" + molki.id + "</td> <td>" + molki.tamano + "</td> <td> En Disco </td> <td>"+ molki.operacion + "</td><td>" + "" + "</td><td>" + molki.tl + "</td><td>" + "" + "</td><td>" + "" + "</td><td>" + (globalTime - molki.tl - molki.tt) +"</td><td>" + molki.tt + "</td><td>" + molki.tres + "</td><td>" + (molki.tme - molki.tt) + "</td></tr>";
         }
 
         //Si el proceso actual esta en bloqueados
