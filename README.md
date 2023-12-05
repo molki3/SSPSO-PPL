@@ -1,4 +1,4 @@
-# ACTIVIDAD 1. SIMULAR PROCESAMIENTO POR LOTES
+# Programa 4: Algoritmo de planificación FCFS (First Come First Server) Continuación
 
 ## GITHUB
 ### CLONAR EL REPOSITORIO DE GITHUB LOCALMENTE
