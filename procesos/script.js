@@ -558,6 +558,8 @@ async function batchProcessing(lotes){
             aux_process = processCopy[0];
         }
         
+        console.log(aux_process)
+
         //actualiza proceso actual
         if(aux_process){
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>OPE</th><th>TME</th><th>TT</th><th>TR</th><th>QT</th></tr>  <tr><td>" + aux_process.id + " </td> <td>" + aux_process.tamano + " </td> <td> " + aux_process.operacion + " </td> <td> " + aux_process.tme + " </td> <td id='tiempot'></td><td id='tiempor'></td> <td id='tiempoq'></td> </tr>";
@@ -612,20 +614,20 @@ async function batchProcessing(lotes){
         });
 
         if(currentProcess==procesos && suspendedProcesses.length>0){
-            console.log("yeayea");
-            aux_process = null;
+            console.log(currentProcess, procesos);
+            //aux_process = null;
+            
 
             //limpia proceso actual
             document.getElementById('current-process').innerHTML = "<tr><th>ID</th><th>SIZE</th><th>TME</th><th>OPE</th><th>TT</th><th>TR</th><th>QT</th></tr>";
            
             procesosMemoria=0;
-            procesos=0;
 
             await delayWithRPress(60 * 1000, currentProcess).then(newCurrentProcess => {
                 currentProcess = newCurrentProcess; // Actualizar currentProcess
             });
 
-            console.log(limit);
+            console.log(currentProcess, procesos);
         }
 
     }
@@ -738,7 +740,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                     endedProcesses.push(auxprocess.id); // Agrega el proceso a la lista de procesos finalizados
                     endedComplete.push(auxprocess);
                     procesosMemoria--;
-                    meterProcesos();
+                    if(procesosMemoria>1) meterProcesos();
                     currentProcess++;
                     //aux_process = null;
                     document.removeEventListener('keydown', keyHandler);
@@ -788,7 +790,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
                 auxprocess.tb = 8;
                 blockedBatch.push(auxprocess);
 
-                aux_process = null;
+                //aux_process = null;
 
                 console.log("INTERRUMPE")
 
@@ -850,7 +852,7 @@ function delayWithKeyPress(ms, currentProcess, auxprocess) {
 
             if ((event.key === 's' || event.key === 'S') && !isPaused && blockedBatch.length>0) {
 
-                console.log("Suspendido");
+                console.log("Suspendido", aux_process);
 
                 blockedBatch[0].tb = 0;
                 let suspendedProcess = blockedBatch[0];
@@ -918,8 +920,7 @@ function delayWithRPress(ms, currentProcess) {
                 processCopy.splice(limit, 0, suspendedProcesses[0]);
                 suspendedProcesses.splice(0, 1);
                 suspendedID.splice(0,1);
-                procesos++;
-                currentProcess++;
+                currentProcess--;
                 resolve(currentProcess);
             }
 
