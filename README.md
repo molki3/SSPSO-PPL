@@ -1,4 +1,4 @@
-# ACTIVIDAD 1. SIMULAR PROCESAMIENTO POR LOTES
+# Programa 2: Simular el procesamiento por lotes con Multiprogramación
 
 ## GITHUB
 ### CLONAR EL REPOSITORIO DE GITHUB LOCALMENTE
